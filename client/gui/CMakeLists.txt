@@ -8,7 +8,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets REQUIRED)
@@ -44,7 +44,10 @@ else()
     endif()
 endif()
 
-target_link_libraries(gui PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(gui PRIVATE zpods_lib spdlog Qt${QT_VERSION_MAJOR}::Widgets)
+target_precompile_headers(${PROJECT_NAME} PRIVATE ${PCH_PATH})
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/ZpodsLib/src)
+
 
 set_target_properties(gui PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
