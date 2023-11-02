@@ -19,6 +19,17 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        periodicwidget.h
+        periodicwidget.cpp
+        periodicwidget.ui
+        logindialog.h
+        logindialog.cpp
+        logindialog.ui
+        filefilterdialog.h
+        filefilterdialog.cpp
+        filefilterdialog.ui
+        dateselector.h
+        dateselector.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

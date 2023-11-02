@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "logindialog.h"
+#include "filefilterdialog.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -14,6 +16,12 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+    // use file filter
+    bool enableFileFilter();
+
+    // use remote
+    bool enableRemote(LoginDialog* loginDialog);
 
 private:
     Ui::MainWindow *ui;
