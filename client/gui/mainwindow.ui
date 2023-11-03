@@ -155,7 +155,7 @@
   <customwidget>
    <class>PeriodicWidget</class>
    <extends>QWidget</extends>
-   <header location="global">periodicwidget.h</header>
+   <header>periodicwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

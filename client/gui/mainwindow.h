@@ -21,9 +21,10 @@ public:
     bool enableFileFilter();
 
     // use remote
-    bool enableRemote(LoginDialog* loginDialog);
+    bool enableRemote();
 
 private:
     Ui::MainWindow *ui;
+    LoginDialog* loginDialog;
 };
 #endif // MAINWINDOW_H

@@ -11,9 +11,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setWindowTitle("Zpods");
 
-    LoginDialog* loginDialog = new LoginDialog(this);
-    loginDialog->hide();
-    enableRemote(loginDialog);
+    this->loginDialog = new LoginDialog(this);
+    this->loginDialog->hide();
+    enableRemote();
 
     enableFileFilter();
 
@@ -37,12 +37,13 @@ bool MainWindow::enableFileFilter()
 
 }
 
-bool MainWindow::enableRemote(LoginDialog* loginDialog)
+bool MainWindow::enableRemote()
 {
     // enable Remote when clicked remoteCheckBox
     connect(ui->remoteChkBox, &QCheckBox::stateChanged, this, [=](){
         bool remoteChecked = ui->remoteChkBox->isChecked();
         if(remoteChecked && (!loginDialog->logined)){
+           loginDialog->clearPasswordLineEdit();
            loginDialog->show();
            loginDialog->exec();
 //           loginDialog->logined = true;

@@ -13,3 +13,7 @@ LoginDialog::~LoginDialog()
 {
     delete ui;
 }
+
+void LoginDialog::clearPasswordLineEdit() {
+    ui->pswLineEdit->clear();
+}
