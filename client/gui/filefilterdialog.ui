@@ -24,7 +24,7 @@
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <widget class="QCheckBox" name="checkBox">
+     <widget class="QCheckBox" name="sizeChkBox">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
         <horstretch>0</horstretch>
@@ -50,7 +50,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QSpinBox" name="spinBox_2"/>
+     <widget class="QSpinBox" name="minSizeSpinBox"/>
     </item>
     <item>
      <spacer name="horizontalSpacer">
@@ -82,15 +82,15 @@
      </widget>
     </item>
     <item>
-     <widget class="QSpinBox" name="spinBox"/>
+     <widget class="QSpinBox" name="maxSizeSpinBox"/>
     </item>
    </layout>
   </widget>
-  <widget class="QCheckBox" name="checkBox_3">
+  <widget class="QCheckBox" name="dateChkBox">
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>130</y>
+     <y>140</y>
      <width>73</width>
      <height>21</height>
     </rect>
@@ -99,7 +99,7 @@
     <string>文件日期</string>
    </property>
   </widget>
-  <widget class="DateSelector" name="widget_3" native="true">
+  <widget class="DateSelector" name="minDateWidget" native="true">
    <property name="geometry">
     <rect>
      <x>110</x>
@@ -109,7 +109,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="DateSelector" name="widget_4" native="true">
+  <widget class="DateSelector" name="maxDateWidget" native="true">
    <property name="geometry">
     <rect>
      <x>330</x>
@@ -119,12 +119,64 @@
     </rect>
    </property>
   </widget>
+  <widget class="QCheckBox" name="typeChkBox">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>200</y>
+     <width>85</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>文件类型</string>
+   </property>
+  </widget>
+  <widget class="MultiSelectComboBox" name="typeFilterWidget" native="true">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>200</y>
+     <width>241</width>
+     <height>21</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="reChkBox">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>260</y>
+     <width>85</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>正则表达式</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="reLineEdit">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>260</y>
+     <width>261</width>
+     <height>21</height>
+    </rect>
+   </property>
+  </widget>
  </widget>
  <customwidgets>
   <customwidget>
    <class>DateSelector</class>
    <extends>QWidget</extends>
    <header>dateselector.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MultiSelectComboBox</class>
+   <extends>QWidget</extends>
+   <header>multiselectcombobox.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

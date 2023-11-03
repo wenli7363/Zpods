@@ -30,6 +30,8 @@ set(PROJECT_SOURCES
         filefilterdialog.ui
         dateselector.h
         dateselector.cpp
+        multiselectcombobox.h
+        multiselectcombobox.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

@@ -6,9 +6,16 @@ FileFilterDialog::FileFilterDialog(QWidget *parent) :
     ui(new Ui::FileFilterDialog)
 {
     ui->setupUi(this);
+    sizeChk = dateChk = reChk = typeChk = false;
+
 }
 
 FileFilterDialog::~FileFilterDialog()
 {
     delete ui;
+}
+
+void FileFilterDialog::connectInit()
+{
+    connect(ui->sizeChkBox,)
 }
