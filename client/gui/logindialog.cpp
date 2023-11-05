@@ -17,3 +17,28 @@ LoginDialog::~LoginDialog()
 void LoginDialog::clearPasswordLineEdit() {
     ui->pswLineEdit->clear();
 }
+
+std::string LoginDialog::get_password() {
+    std::cout << "Password: ";
+
+    termios oldt;
+    tcgetattr(STDIN_FILENO, &oldt);
+    termios newt = oldt;
+    newt.c_lflag &= ~ECHO;
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+
+    std::string password;
+    std::getline(std::cin, password);
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+
+    std::cout << std::endl;
+    return password;
+}
+
+std::string LoginDialog::get_username() {
+    std::cout << "Username: ";
+    std::string username;
+    std::getline(std::cin, username);
+    return username;
+}

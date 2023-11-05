@@ -32,6 +32,8 @@ set(PROJECT_SOURCES
         dateselector.cpp
         multiselectcombobox.h
         multiselectcombobox.cpp
+        myfiledialog.h
+        myfiledialog.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

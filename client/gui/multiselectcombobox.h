@@ -97,5 +97,4 @@ private:
 
 
 
-
 #endif // MULTISELECTCOMBOBOX_H

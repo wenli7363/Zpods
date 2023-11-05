@@ -1,7 +1,11 @@
 #ifndef LOGINDIALOG_H
 #define LOGINDIALOG_H
 
+#pragma once
+#include "pch.h"
 #include <QDialog>
+#include <termios.h>
+
 
 namespace Ui {
 class LoginDialog;
@@ -18,6 +22,9 @@ public:
     ~LoginDialog();
 
     void clearPasswordLineEdit();
+
+    std::string get_password();
+    std::string get_username();
 
 private:
     Ui::LoginDialog *ui;

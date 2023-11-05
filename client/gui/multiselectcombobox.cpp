@@ -35,6 +35,7 @@ MultiSelectComboBox::MultiSelectComboBox(QWidget *parent)
 
     addItem("regular");
     addItem("direcotry");
+    addItem("symbolist");
 }
 
 MultiSelectComboBox::~MultiSelectComboBox()
@@ -244,4 +245,5 @@ void MultiSelectComboBox::itemClicked(int _index)
         check_box->setChecked(!check_box->isChecked());
     }
 }
+
 
