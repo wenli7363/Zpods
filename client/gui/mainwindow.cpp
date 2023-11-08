@@ -5,6 +5,7 @@
 #include <QDir>
 #include <QListWidget>
 #include <QStringList>
+#include <QInputDialog>
 #include <QDebug>
 
 
@@ -97,22 +98,6 @@ void MainWindow::enableSrcBtn()
                 QListWidgetItem* item = new QListWidgetItem(fileName);
                 ui->srcListWidget->addItem(item);
             }
-//            QSet<QString> uniqueFileNames;
-//            for (const QString &fileName : srcFileList)
-//            {
-//                uniqueFileNames.insert(fileName);
-//            }
-
-//            // 将去重后的文件路径存回QStringList
-//            srcFileList = uniqueFileNames.toList();
-
-//            // 遍历选定的文件路径，将它们添加到QListWidget中
-//            for (const QString &fileName : srcFileList)
-//            {
-//             this->src_path_list.push_back(qstr.toStdString());
-//               QListWidgetItem *item = new QListWidgetItem(fileName);
-//               ui->srcListWidget->addItem(item);
-//            }
 // Debug info
 //            for(const std::string& path : src_path_list)
 //            {
@@ -151,16 +136,27 @@ void MainWindow::enableCmpsChkBox()
 
 void MainWindow::enableEncryptChkBox()
 {
-    connect(ui->encryptChkBox, &QCheckBox::stateChanged, this, [&](){
-        bool encryptChecked = ui->encryptChkBox->isChecked();
-        if(encryptChecked){
-             this->encryptChk = true;
-        }else{
-             this->encryptChk = false;
+    connect(ui->encryptChkBox, &QCheckBox::stateChanged, this, [this](int state){
+        if (state == Qt::Checked) {
+            // 复选框勾选上时，弹出密码输入对话框
+            QString password = QInputDialog::getText(this, "输入密码", "请输入密码:", QLineEdit::Password);
+            if (!password.isEmpty()) {
+                // 用户输入了密码，你可以在这里处理密码，例如存储到变量中
+                this->password = password.toStdString();
+                this->encryptChk = true;
+                qDebug()<<"psw::"<<QString::fromStdString(this->password);
+            } else {
+                // 用户取消了输入密码，取消复选框勾选状态
+                this->encryptChk = false;
+                ui->encryptChkBox->setCheckState(Qt::Unchecked);
+            }
+        } else if (state == Qt::Unchecked) {
+            // 复选框取消勾选时，取消加密
+            this->encryptChk = false;
         }
-//        qDebug()<<"encryptChk:"<<encryptChk;
     });
 }
+
 
 void MainWindow::enableSynChkBox()
 {
