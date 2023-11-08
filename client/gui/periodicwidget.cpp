@@ -1,6 +1,7 @@
 #include "periodicwidget.h"
 #include "ui_periodicwidget.h"
 #include <QCheckBox>
+#include <QDebug>
 
 PeriodicWidget::PeriodicWidget(QWidget *parent) :
     QWidget(parent),
@@ -11,7 +12,7 @@ PeriodicWidget::PeriodicWidget(QWidget *parent) :
     ui->spinBox->setEnabled(false);
 
     // enable spinBox by checkbox
-    connect(ui->checkBox, &QCheckBox::stateChanged, this, [=](){
+    connect(ui->checkBox, &QCheckBox::stateChanged, this, [&](){
         bool periodicChecked = ui->checkBox->isChecked();
         if(periodicChecked){
              ui->spinBox->setEnabled(true);

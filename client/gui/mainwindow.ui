@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>583</width>
-    <height>381</height>
+    <width>577</width>
+    <height>515</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,8 +19,8 @@
      <rect>
       <x>20</x>
       <y>0</y>
-      <width>531</width>
-      <height>121</height>
+      <width>511</width>
+      <height>291</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -35,7 +35,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="srcPath"/>
+         <widget class="QListWidget" name="srcListWidget"/>
         </item>
         <item>
          <widget class="QPushButton" name="srcBtn">
@@ -75,8 +75,8 @@
    <widget class="QWidget" name="widget_4" native="true">
     <property name="geometry">
      <rect>
-      <x>50</x>
-      <y>130</y>
+      <x>40</x>
+      <y>310</y>
       <width>461</width>
       <height>31</height>
      </rect>
@@ -116,7 +116,7 @@
     <property name="geometry">
      <rect>
       <x>50</x>
-      <y>210</y>
+      <y>350</y>
       <width>211</width>
       <height>41</height>
      </rect>
@@ -127,7 +127,7 @@
     <property name="geometry">
      <rect>
       <x>300</x>
-      <y>220</y>
+      <y>360</y>
       <width>85</width>
       <height>21</height>
      </rect>
@@ -140,7 +140,7 @@
     <property name="geometry">
      <rect>
       <x>190</x>
-      <y>280</y>
+      <y>420</y>
       <width>151</width>
       <height>41</height>
      </rect>
