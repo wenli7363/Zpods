@@ -35,7 +35,11 @@
          </widget>
         </item>
         <item>
-         <widget class="QListWidget" name="srcListWidget"/>
+         <widget class="QListWidget" name="srcListWidget">
+          <property name="selectionMode">
+           <enum>QAbstractItemView::NoSelection</enum>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QPushButton" name="srcBtn">
@@ -58,7 +62,11 @@
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="targetPath"/>
+         <widget class="QLineEdit" name="targetPath">
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QPushButton" name="targetBtn">

@@ -17,7 +17,7 @@ class LoginDialog : public QDialog
     Q_OBJECT
 
 public:
-    bool logined = false;
+    bool logined;
 
     explicit LoginDialog(QWidget *parent = nullptr);
     ~LoginDialog();
@@ -36,6 +36,9 @@ public:
     void connectRegBtn();
     void connectRegBtn2();
     void connectReturnBtn();
+
+signals:
+    void sentRegist(std::string username, std::string psw);
 
 private:
     Ui::LoginDialog *ui;

@@ -12,11 +12,12 @@ class DateSelector : public QWidget
 public:
 //    explicit DateSelector(QWidget *parent = nullptr);
     DateSelector(QWidget *parent = nullptr);
+    QLineEdit *dateLineEdit;
 
 signals:
 
 private:
-    QLineEdit *dateLineEdit;
+
     QPushButton *selectButton;
     QCalendarWidget *calendarWidget;
 };

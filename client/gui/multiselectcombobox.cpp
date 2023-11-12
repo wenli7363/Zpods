@@ -34,8 +34,8 @@ MultiSelectComboBox::MultiSelectComboBox(QWidget *parent)
     connect(this, static_cast<void (QComboBox::*)(int)>(&QComboBox::activated), this, &MultiSelectComboBox::itemClicked);
 
     addItem("regular");
-    addItem("direcotry");
-    addItem("symbolist");
+    addItem("directory");
+    addItem("symlink");
 }
 
 MultiSelectComboBox::~MultiSelectComboBox()

@@ -6,6 +6,7 @@
 #include "logindialog.h"
 #include "filefilterdialog.h"
 #include "myfiledialog.h"
+#include "periodicwidget.h"
 #include "zpods_lib.h"
 #include "termios.h"
 #include <network.h>
@@ -21,8 +22,7 @@ class MainWindow : public QMainWindow
 
 public:
     // 成员变量
-//    std::vector<std::string> src_path_list;
-    QStringList srcFileList;
+    std::vector<std::string> src_path_list;
     std::string target_dir;
     std::string password;
     zpods::BackupConfig config;
@@ -32,9 +32,10 @@ public:
     int interval = -1;
 
     // fileter flag
-    bool cmpsChk, encryptChk, remoteChk, synChk;
+    bool cmpsChk, encryptChk, synChk;
     bool periodChk;
     bool filterChk;
+    bool remoteChk; //表示是否开启远程功能，只有成功登陆了才为true
 
     // 方法
     MainWindow(QWidget *parent = nullptr);
@@ -53,9 +54,18 @@ public:
     void enableCmpsChkBox();
     void enableEncryptChkBox();
     void enableSynChkBox();
+    void enablePeriodBox();
+    void handleRegist();
+    void handleBackup();
+    void handleRestore();
+    void enableStartBtn();
+
+    // 功能函数
+    void regist();
 
 private:
     Ui::MainWindow *ui;
     LoginDialog* loginDialog;
+    FilterConfig* filterConfig;
 };
 #endif // MAINWINDOW_H

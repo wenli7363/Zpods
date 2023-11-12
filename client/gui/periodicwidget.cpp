@@ -16,8 +16,10 @@ PeriodicWidget::PeriodicWidget(QWidget *parent) :
         bool periodicChecked = ui->checkBox->isChecked();
         if(periodicChecked){
              ui->spinBox->setEnabled(true);
+             emit sentPeriodOpen();
         }else{
              ui->spinBox->setEnabled(false);
+             emit sentPeriodClose();
         }
     });
 }
@@ -25,4 +27,9 @@ PeriodicWidget::PeriodicWidget(QWidget *parent) :
 PeriodicWidget::~PeriodicWidget()
 {
     delete ui;
+}
+
+int PeriodicWidget::getValue()
+{
+    return ui->spinBox->value();
 }

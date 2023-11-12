@@ -5,6 +5,7 @@
 #include <QDir>
 #include <QListWidget>
 #include <QStringList>
+#include <QMessageBox>
 #include <QInputDialog>
 #include <QDebug>
 
@@ -19,7 +20,6 @@ MainWindow::MainWindow(QWidget *parent)
     // create loginDialog
     this->loginDialog = new LoginDialog(this);
     this->loginDialog->hide();
-
     // set the connect function of two chkBox
     connectInit();
 
@@ -43,7 +43,11 @@ void MainWindow::enableFileFilter()
             this->filterChk = true;
 
             FileFilterDialog* filterDialog = new FileFilterDialog(this);
-            filterDialog->exec();
+            connect(filterDialog,&FileFilterDialog::sentFilterConfig,this,[&](FilterConfig* filterconfig){
+                this->filterConfig = filterconfig;
+            });
+
+            filterDialog->exec();   // 非模态
         }else{
            this->filterChk = false;
         }
@@ -65,6 +69,7 @@ void MainWindow::enableRemote()
 //           loginDialog->logined = true;
         }else{
             this->remoteChk = false;
+//            ui->remoteChkBox->setCheckState(Qt::Unchecked);
         }
 //        qDebug()<<"remoteChkBox: " <<remoteChk;
     });
@@ -91,18 +96,18 @@ void MainWindow::enableSrcBtn()
         if(dialog->exec()==QDialog::Accepted)
         {
 //            qDebug()<<dialog->selectedFiles();
-            srcFileList = dialog->selectedFiles();
+            QStringList srcFileList = dialog->selectedFiles();
+
             ui->srcListWidget->clear();
+            src_path_list.clear();
+
             for(const auto& fileName : srcFileList)
             {
                 QListWidgetItem* item = new QListWidgetItem(fileName);
                 ui->srcListWidget->addItem(item);
+
+                src_path_list.push_back(fileName.toStdString());
             }
-// Debug info
-//            for(const std::string& path : src_path_list)
-//            {
-//                qDebug()<<path.c_str();
-//            }
 
         }
     });
@@ -117,6 +122,7 @@ void MainWindow::enableTargetBtn()
         if (!targetPath.isEmpty())
         {
             ui->targetPath->setText(targetPath);
+            this->target_dir = targetPath.toStdString();
         }
     });
 }
@@ -130,7 +136,6 @@ void MainWindow::enableCmpsChkBox()
         }else{
             this->cmpsChk = false;
         }
-//        qDebug()<<"cmpsChk:"<<cmpsChk;
     });
 }
 
@@ -139,15 +144,15 @@ void MainWindow::enableEncryptChkBox()
     connect(ui->encryptChkBox, &QCheckBox::stateChanged, this, [this](int state){
         if (state == Qt::Checked) {
             // 复选框勾选上时，弹出密码输入对话框
-            QString password = QInputDialog::getText(this, "输入密码", "请输入密码:", QLineEdit::Password);
-            if (!password.isEmpty()) {
+            QString psw = QInputDialog::getText(this, "输入密码", "请输入密码:", QLineEdit::Password);
+            if (!psw.isEmpty()) {
                 // 用户输入了密码，你可以在这里处理密码，例如存储到变量中
-                this->password = password.toStdString();
+                this->password = psw.toStdString();
                 this->encryptChk = true;
-                qDebug()<<"psw::"<<QString::fromStdString(this->password);
             } else {
                 // 用户取消了输入密码，取消复选框勾选状态
                 this->encryptChk = false;
+
                 ui->encryptChkBox->setCheckState(Qt::Unchecked);
             }
         } else if (state == Qt::Unchecked) {
@@ -167,7 +172,17 @@ void MainWindow::enableSynChkBox()
         }else{
             this->synChk = false;
         }
-//        qDebug()<<"synChk:"<<synChk;
+    });
+}
+
+void MainWindow::enablePeriodBox()
+{
+    connect(ui->periodicWidget,&PeriodicWidget::sentPeriodOpen,this,[&](){
+        this->periodChk = true;
+    });
+
+    connect(ui->periodicWidget, &PeriodicWidget::sentPeriodClose,this,[&](){
+        this->periodChk = false;
     });
 }
 
@@ -181,5 +196,100 @@ void MainWindow::connectInit()
     enableCmpsChkBox();
     enableEncryptChkBox();
     enableSynChkBox();
+    enablePeriodBox();
+    handleRegist();
+    enableStartBtn();
 }
 
+void MainWindow::handleRegist()
+{
+    connect(this->loginDialog, &LoginDialog::sentRegist,this,[&](std::string username, std::string psw){
+        user.username = username;
+        user.password = psw;
+
+        let status = user.register_();
+                if (status == zpods::Status::USER_ALREADY_EXISTS) {
+                    spdlog::info("user already exists!");
+                } else if (status == zpods::Status::OK) {
+                    spdlog::info("register succeeded!");
+                } else {
+                    spdlog::info("register failed!");
+                }
+    });
+}
+
+void MainWindow::handleBackup()
+{
+    // config paths
+   if (src_path_list.empty()) {
+       QMessageBox::critical(this, "提示", "请选择要备份的文件！");
+       spdlog::error("src path list is empty!");
+       return;
+    }
+
+   if(target_dir.empty()){
+       QMessageBox::critical(this,"提示","请选择要保存的路径");
+       spdlog::error("target dir is empty!");
+       return;
+    }
+
+    QString backupName = QInputDialog::getText(this, "请输入打包文件名", "请输入打包文件名:");
+    if(backupName.isEmpty())
+    {
+        QMessageBox::critical(this, "提示", "请输入打包后的文件名！");
+        return;
+    }
+    config.backup_filename = backupName.toStdString();
+
+    config.filter.paths = std::vector<zpods::fs::zpath>(src_path_list.begin(), src_path_list.end());
+
+    // if use the file filter
+    if(filterChk)
+    {
+        qDebug()<<"选中了filterChk";
+    }
+
+    if(cmpsChk)
+    {
+        config.compress = true;
+    }
+
+    if(encryptChk)
+    {
+        config.crypto_config = zpods::CryptoConfig(password);
+    }
+
+    if(remoteChk)
+    {
+        qDebug()<<"选中了远程，但是没做";
+    }
+
+    if(synChk)
+    {
+        qDebug()<<"选中了同步，还没做";
+        zpods::sync_backup(target_dir.c_str(), config);
+    }
+
+    if(periodChk){
+        interval = ui->periodicWidget->getValue();
+    }
+
+//    do{
+
+
+//    }while(interval>0)
+
+
+}
+
+//void MainWindow::handleRestore()
+//{
+
+//}
+
+void MainWindow::enableStartBtn()
+{
+    connect(ui->startBtn, &QPushButton::clicked,this,[&](){
+       handleBackup();
+    });
+}

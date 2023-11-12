@@ -15,6 +15,12 @@ public:
     explicit PeriodicWidget(QWidget *parent = nullptr);
     ~PeriodicWidget();
 
+    int getValue();
+
+signals:
+    void sentPeriodOpen();
+    void sentPeriodClose();
+
 private:
     Ui::PeriodicWidget *ui;
 };

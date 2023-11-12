@@ -9,6 +9,7 @@ LoginDialog::LoginDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     setWindowTitle("登陆");
+    logined = false;
     ui->stackedWidget->setCurrentWidget(ui->loginPage);
 
     connectLoginBtn();
@@ -66,6 +67,9 @@ void LoginDialog::connectLoginBtn()
 void LoginDialog::connectRegBtn()
 {
     connect(ui->registerBtn, &QPushButton::clicked,[&](){
+        ui->usrLineEdit2->clear();
+        ui->pswRegLine->clear();
+        ui->pswRegLine2->clear();
         ui->stackedWidget->setCurrentWidget(ui->regPage);
     });
 }
@@ -88,6 +92,7 @@ void LoginDialog::connectRegBtn2()
          {
 //             qDebug()<<"usr: " << QString::fromStdString(userName)<<" psw: "<< QString::fromStdString(psw);
             // 注册逻辑
+            emit sentRegist(userName,psw);
          }else{
             QMessageBox::critical(this, "提示", "两次输入密码不同，请重新输入！");
             ui->pswRegLine->clear();

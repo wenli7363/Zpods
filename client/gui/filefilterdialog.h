@@ -2,10 +2,24 @@
 #define FILEFILTERDIALOG_H
 
 #include <QDialog>
+#include <filesystem>
+#include <map>
 
 namespace Ui {
-class FileFilterDialog;
+    class FileFilterDialog;
 }
+
+using FileType = std::filesystem::file_type;
+
+struct FilterConfig
+{
+    bool sizeChk, dateChk, typeChk, reChk;
+    int minSize, maxSize;
+    std::string min_date, max_date;
+    std::unordered_set<FileType> types;  // types to backup
+    std::vector<std::string> re_list; // regular expressions
+};
+
 
 class FileFilterDialog : public QDialog
 {
@@ -16,6 +30,10 @@ public:
     ~FileFilterDialog();
 
     void connectInit();
+    void closeEvent(QCloseEvent *event);
+signals:
+    void sentFilterConfig(FilterConfig* config);
+
 
 private:
     Ui::FileFilterDialog *ui;
