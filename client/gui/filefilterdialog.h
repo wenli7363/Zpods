@@ -14,7 +14,7 @@ using FileType = std::filesystem::file_type;
 struct FilterConfig
 {
     bool sizeChk, dateChk, typeChk, reChk;
-    int minSize, maxSize;
+    int minSize = -1, maxSize = 0x3f3f3f3f;
     std::string min_date, max_date;
     std::unordered_set<FileType> types;  // types to backup
     std::vector<std::string> re_list; // regular expressions

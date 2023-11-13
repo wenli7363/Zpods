@@ -233,13 +233,14 @@ void MainWindow::handleBackup()
        return;
     }
 
-    QString backupName = QInputDialog::getText(this, "请输入打包文件名", "请输入打包文件名:");
-    if(backupName.isEmpty())
-    {
-        QMessageBox::critical(this, "提示", "请输入打包后的文件名！");
-        return;
-    }
-    config.backup_filename = backupName.toStdString();
+// 是否指定文件名
+//    QString backupName = QInputDialog::getText(this, "请输入打包文件名", "请输入打包文件名:");
+//    if(backupName.isEmpty())
+//    {
+//        QMessageBox::critical(this, "提示", "请输入打包后的文件名！");
+//        return;
+//    }
+//    config.backup_filename = backupName.toStdString();
 
     config.filter.paths = std::vector<zpods::fs::zpath>(src_path_list.begin(), src_path_list.end());
 
@@ -247,39 +248,51 @@ void MainWindow::handleBackup()
     if(filterChk)
     {
         qDebug()<<"选中了filterChk";
-    }
-
-    if(cmpsChk)
-    {
-        config.compress = true;
-    }
-
-    if(encryptChk)
-    {
-        config.crypto_config = zpods::CryptoConfig(password);
-    }
-
-    if(remoteChk)
-    {
-        qDebug()<<"选中了远程，但是没做";
-    }
-
-    if(synChk)
-    {
-        qDebug()<<"选中了同步，还没做";
-        zpods::sync_backup(target_dir.c_str(), config);
+        // 把filterconfig一个个复制到对应变量中
     }
 
     if(periodChk){
         interval = ui->periodicWidget->getValue();
+    }else{
+        interval = -1;
     }
 
-//    do{
+    do{
+        if(cmpsChk)
+        {
+            config.compress = true;
+        }else{
+            config.compress = false;
+        }
 
+        if(encryptChk)
+        {
+            config.crypto_config = zpods::CryptoConfig(password);
+        }
 
-//    }while(interval>0)
+        if(synChk)
+        {
+            zpods::sync_backup(target_dir.c_str(), config);
+        }else{
+            zpods::backup(target_dir.c_str(), config);
+        }
 
+        let backup_file_path = fmt::format("{}/{}", target_dir.c_str(), config.backup_filename->c_str());
+        if (remoteChk) {
+            let status = user.upload_file(backup_file_path.c_str());
+            if (status == zpods::Status::OK) {
+                spdlog::info("upload successfully!");
+            } else {
+                spdlog::info("fail to upload");
+            }
+        }
 
+        if(periodChk)
+        {
+            std::this_thread::sleep_for(std::chrono::seconds(interval));
+        }
+
+    }while(interval>0);
 }
 
 //void MainWindow::handleRestore()
