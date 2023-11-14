@@ -102,9 +102,45 @@ void FileFilterDialog::closeEvent(QCloseEvent *event)
 
         if(dateChk)
         {
-            config->min_date = ui->minDateWidget->dateLineEdit->text().toStdString();
-            config->max_date = ui->maxDateWidget->dateLineEdit->text().toStdString();
+            // 获取日期
+            QString minDateString = ui->minDateWidget->dateLineEdit->text();
+            QString maxDateString = ui->maxDateWidget->dateLineEdit->text();
+
+            if(minDateString.isEmpty())
+            {
+                // 设置默认最小日期
+                minDateString = "0000-01-01";
+            }
+
+            if(maxDateString.isEmpty())
+            {
+                // 设置默认最大日期
+                maxDateString = "9999-12-31";
+            }
+
+            QDate date1 = QDate::fromString(minDateString, "yyyy-MM-dd");
+            QDate date2 = QDate::fromString(maxDateString, "yyyy-MM-dd");
+
+            if(!date1.isValid())
+            {
+                date1 = QDate(1, 1, 1); // 设置默认最小日期
+            }
+
+            if(!date2.isValid())
+            {
+                date2 = QDate(9999, 12, 31); // 设置默认最大日期
+            }
+
+            if(date1 > date2)
+            {
+                QMessageBox::critical(this, "日期输入有误", "最小日期要小于最大日期！");
+                date1 = QDate(1, 1, 1); // 重置为默认最小日期
+                date2 = QDate(9999, 12, 31); // 重置为默认最大日期
+            }
+
+            qDebug() << date1 << date2;
         }
+
 
         if(sizeChk)
         {

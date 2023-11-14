@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <filesystem>
 #include <map>
+#include <QMessageBox>
 
 namespace Ui {
     class FileFilterDialog;
