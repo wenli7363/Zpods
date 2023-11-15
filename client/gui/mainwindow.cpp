@@ -23,10 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
     // set the connect function of two chkBox
     connectInit();
 
-   // Init variabls
-   this->cmpsChk = this->remoteChk = this->encryptChk = this->synChk = false;
-   this->filterChk = false;
-   this->periodChk = false;
+    this->tmpBackupOptions = new BackupOptions;
 }
 
 MainWindow::~MainWindow()
@@ -40,18 +37,37 @@ void MainWindow::enableFileFilter()
     connect(ui->filterChkBox, &QCheckBox::stateChanged, this, [&](){
         bool filterChecked = ui->filterChkBox->isChecked();
         if(filterChecked){
-            this->filterChk = true;
+            tmpBackupOptions->filterChk = true;
 
             FileFilterDialog* filterDialog = new FileFilterDialog(this);
             connect(filterDialog,&FileFilterDialog::sentFilterConfig,this,[&](FilterConfig* filterconfig){
                 this->filterConfig = filterconfig;
+
+                if(!(filterConfig->sizeChk||filterConfig->typeChk||filterConfig->dateChk||
+                     filterConfig->sizeChk||filterConfig->reChk))
+                {
+                    ui->filterChkBox->setCheckState(Qt::Unchecked);
+                    tmpBackupOptions->filterChk = false;
+
+                    // 释放 filterConfig 指向的内存，并将指针置为空
+                    delete filterConfig;
+                    filterConfig = nullptr;
+                }
+//                qDebug()<<"size:["<<filterconfig->minSize<<","<<filterconfig->maxSize<<"]";
+//                qDebug()<<"date:["<<QString::fromStdString(filterconfig->min_date)<<","<<QString::fromStdString(filterconfig->max_date)<<"]";
+//                qDebug()<<"type size: "<<filterconfig->types.size();
+//                qDebug()<<"sizeChk:"<<filterconfig->sizeChk;
+//                qDebug()<<"dateChk:"<<filterconfig->dateChk;
+//                qDebug()<<"tpyeChk:"<<filterconfig->typeChk;
+//                qDebug()<<"reChk:"<<filterconfig->reChk;
             });
 
             filterDialog->exec();   // 非模态
+            delete filterDialog;
+            filterDialog = nullptr;
         }else{
-           this->filterChk = false;
+           tmpBackupOptions->filterChk = false;
         }
-
 //        qDebug()<<"filterChkBox:"<<filterChk;
     });
 }
@@ -62,13 +78,13 @@ void MainWindow::enableRemote()
     connect(ui->remoteChkBox, &QCheckBox::stateChanged, this, [&](){
         bool remoteChecked = ui->remoteChkBox->isChecked();
         if(remoteChecked && (!loginDialog->logined)){
-           this->remoteChk = true;
+           tmpBackupOptions->remoteChk = true;
            loginDialog->clearPasswordLineEdit();
            loginDialog->show();
            loginDialog->exec();
 //           loginDialog->logined = true;
         }else{
-            this->remoteChk = false;
+            tmpBackupOptions->remoteChk = false;
 //            ui->remoteChkBox->setCheckState(Qt::Unchecked);
         }
 //        qDebug()<<"remoteChkBox: " <<remoteChk;
@@ -95,18 +111,17 @@ void MainWindow::enableSrcBtn()
         connect(button,SIGNAL(accepted()),dialog,SLOT(slot_myAccetp()));//改成自己的槽
         if(dialog->exec()==QDialog::Accepted)
         {
-//            qDebug()<<dialog->selectedFiles();
             QStringList srcFileList = dialog->selectedFiles();
 
             ui->srcListWidget->clear();
-            src_path_list.clear();
+            tmpBackupOptions->src_path_list.clear();
 
             for(const auto& fileName : srcFileList)
             {
                 QListWidgetItem* item = new QListWidgetItem(fileName);
                 ui->srcListWidget->addItem(item);
 
-                src_path_list.push_back(fileName.toStdString());
+                tmpBackupOptions->src_path_list.push_back(fileName.toStdString());
             }
 
         }
@@ -122,7 +137,7 @@ void MainWindow::enableTargetBtn()
         if (!targetPath.isEmpty())
         {
             ui->targetPath->setText(targetPath);
-            this->target_dir = targetPath.toStdString();
+            tmpBackupOptions->target_dir = targetPath.toStdString();
         }
     });
 }
@@ -132,9 +147,9 @@ void MainWindow::enableCmpsChkBox()
     connect(ui->cmpsChkBox, &QCheckBox::stateChanged, this, [&](){
         bool cmpsChecked = ui->cmpsChkBox->isChecked();
         if(cmpsChecked){
-            this->cmpsChk = true;
+            tmpBackupOptions->cmpsChk = true;
         }else{
-            this->cmpsChk = false;
+            tmpBackupOptions->cmpsChk = false;
         }
     });
 }
@@ -147,17 +162,17 @@ void MainWindow::enableEncryptChkBox()
             QString psw = QInputDialog::getText(this, "输入密码", "请输入密码:", QLineEdit::Password);
             if (!psw.isEmpty()) {
                 // 用户输入了密码，你可以在这里处理密码，例如存储到变量中
-                this->password = psw.toStdString();
-                this->encryptChk = true;
+                tmpBackupOptions->password = psw.toStdString();
+                tmpBackupOptions->encryptChk = true;
             } else {
                 // 用户取消了输入密码，取消复选框勾选状态
-                this->encryptChk = false;
+                tmpBackupOptions->encryptChk = false;
 
                 ui->encryptChkBox->setCheckState(Qt::Unchecked);
             }
         } else if (state == Qt::Unchecked) {
             // 复选框取消勾选时，取消加密
-            this->encryptChk = false;
+            tmpBackupOptions->encryptChk = false;
         }
     });
 }
@@ -168,9 +183,9 @@ void MainWindow::enableSynChkBox()
     connect(ui->synChkBox, &QCheckBox::stateChanged, this, [&](){
         bool synChecked = ui->synChkBox->isChecked();
         if(synChecked){
-            this->synChk = true;
+            tmpBackupOptions->synChk = true;
         }else{
-            this->synChk = false;
+            tmpBackupOptions->synChk = false;
         }
     });
 }
@@ -178,11 +193,11 @@ void MainWindow::enableSynChkBox()
 void MainWindow::enablePeriodBox()
 {
     connect(ui->periodicWidget,&PeriodicWidget::sentPeriodOpen,this,[&](){
-        this->periodChk = true;
+        tmpBackupOptions->periodChk = true;
     });
 
     connect(ui->periodicWidget, &PeriodicWidget::sentPeriodClose,this,[&](){
-        this->periodChk = false;
+        tmpBackupOptions->periodChk = false;
     });
 }
 
@@ -218,16 +233,16 @@ void MainWindow::handleRegist()
     });
 }
 
-void MainWindow::handleBackup()
+void MainWindow::handleBackup(BackupOptions * backupOptions)
 {
     // config paths
-   if (src_path_list.empty()) {
+   if (backupOptions->src_path_list.empty()) {
        QMessageBox::critical(this, "提示", "请选择要备份的文件！");
        spdlog::error("src path list is empty!");
        return;
     }
 
-   if(target_dir.empty()){
+   if(backupOptions->target_dir.empty()){
        QMessageBox::critical(this,"提示","请选择要保存的路径");
        spdlog::error("target dir is empty!");
        return;
@@ -240,45 +255,45 @@ void MainWindow::handleBackup()
 //        QMessageBox::critical(this, "提示", "请输入打包后的文件名！");
 //        return;
 //    }
-//    config.backup_filename = backupName.toStdString();
+//    backupOptions->config.backup_filename = backupName.toStdString();
 
-    config.filter.paths = std::vector<zpods::fs::zpath>(src_path_list.begin(), src_path_list.end());
+    backupOptions->config.filter.paths = std::vector<zpods::fs::zpath>(backupOptions->src_path_list.begin(), backupOptions->src_path_list.end());
 
     // if use the file filter
-    if(filterChk)
+    if(backupOptions->filterChk)
     {
         qDebug()<<"选中了filterChk";
         // 把filterconfig一个个复制到对应变量中
     }
 
-    if(periodChk){
-        interval = ui->periodicWidget->getValue();
+    if(backupOptions->periodChk){
+        backupOptions->interval = ui->periodicWidget->getValue();
     }else{
-        interval = -1;
+        backupOptions->interval = -1;
     }
 
     do{
-        if(cmpsChk)
+        if(backupOptions->cmpsChk)
         {
-            config.compress = true;
+            backupOptions->config.compress = true;
         }else{
-            config.compress = false;
+            backupOptions->config.compress = false;
         }
 
-        if(encryptChk)
+        if(backupOptions->encryptChk)
         {
-            config.crypto_config = zpods::CryptoConfig(password);
+            backupOptions->config.crypto_config = zpods::CryptoConfig(backupOptions->password);
         }
 
-        if(synChk)
+        if(backupOptions->synChk)
         {
-            zpods::sync_backup(target_dir.c_str(), config);
+            zpods::sync_backup(backupOptions->target_dir.c_str(), backupOptions->config);
         }else{
-            zpods::backup(target_dir.c_str(), config);
+            zpods::backup(backupOptions->target_dir.c_str(), backupOptions->config);
         }
 
-        let backup_file_path = fmt::format("{}/{}", target_dir.c_str(), config.backup_filename->c_str());
-        if (remoteChk) {
+        let backup_file_path = fmt::format("{}/{}", backupOptions->target_dir.c_str(), backupOptions->config.backup_filename->c_str());
+        if (backupOptions->remoteChk) {
             let status = user.upload_file(backup_file_path.c_str());
             if (status == zpods::Status::OK) {
                 spdlog::info("upload successfully!");
@@ -287,12 +302,12 @@ void MainWindow::handleBackup()
             }
         }
 
-        if(periodChk)
+        if(backupOptions->periodChk)
         {
-            std::this_thread::sleep_for(std::chrono::seconds(interval));
+            std::this_thread::sleep_for(std::chrono::seconds(backupOptions->interval));
         }
 
-    }while(interval>0);
+    }while(backupOptions->interval>0);
 }
 
 //void MainWindow::handleRestore()
@@ -303,6 +318,10 @@ void MainWindow::handleBackup()
 void MainWindow::enableStartBtn()
 {
     connect(ui->startBtn, &QPushButton::clicked,this,[&](){
-       handleBackup();
+
+       // 这里其实可以开多线程了
+       BackupOptions * backupOptions = new BackupOptions;
+       backupOptions = tmpBackupOptions;
+       handleBackup(backupOptions);
     });
 }

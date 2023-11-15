@@ -12,6 +12,35 @@
 #include <network.h>
 #include <QString>
 
+struct BackupOptions
+{
+    // 成员变量
+    std::vector<std::string> src_path_list;
+    std::string target_dir;
+    std::string password;
+    zpods::BackupConfig config;
+    std::string min_date;
+    std::string max_date;
+    int interval;
+
+    // fileter flag
+    bool cmpsChk, encryptChk, synChk;
+    bool periodChk;
+    bool filterChk;
+    bool remoteChk; //表示是否开启远程功能，只有成功登陆了才为true
+
+
+    BackupOptions()
+            : cmpsChk(false), encryptChk(false), synChk(false),
+              periodChk(false), filterChk(false), remoteChk(false) {
+
+        std::string min_date = "0001-01-01";
+        std::string max_date = "9999-12-31";
+        int interval = -1;
+
+    }
+};
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -21,36 +50,17 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    // 成员变量
-    std::vector<std::string> src_path_list;
-    std::string target_dir;
-    std::string password;
-    zpods::BackupConfig config;
-    zpods::User user;
-    std::string min_date;
-    std::string max_date;
-    int interval = -1;
-
-    // fileter flag
-    bool cmpsChk, encryptChk, synChk;
-    bool periodChk;
-    bool filterChk;
-    bool remoteChk; //表示是否开启远程功能，只有成功登陆了才为true
-
     // 方法
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
     // 槽函数初始化
     void connectInit();
-    // connect function of FileFilter CheckBox
+    // 槽函数
     void enableFileFilter();
-    // connect function of Remote CheckBox
     void enableRemote();
-    // connect function of srcPushBtn
     void enableSrcBtn();
     void enableTargetBtn();
-    // connect function of chkBox
     void enableCmpsChkBox();
     void enableEncryptChkBox();
     void enableSynChkBox();
@@ -67,5 +77,9 @@ private:
     Ui::MainWindow *ui;
     LoginDialog* loginDialog;
     FilterConfig* filterConfig;
+
+    BackupOptions* tmpBackupOptions;    // 每次主界面的配置，之后会存起来持久化
+    zpods::User user;
+
 };
 #endif // MAINWINDOW_H

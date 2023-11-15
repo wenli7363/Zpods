@@ -106,18 +106,6 @@ void FileFilterDialog::closeEvent(QCloseEvent *event)
             QString minDateString = ui->minDateWidget->dateLineEdit->text();
             QString maxDateString = ui->maxDateWidget->dateLineEdit->text();
 
-            if(minDateString.isEmpty())
-            {
-                // 设置默认最小日期
-                minDateString = "0000-01-01";
-            }
-
-            if(maxDateString.isEmpty())
-            {
-                // 设置默认最大日期
-                maxDateString = "9999-12-31";
-            }
-
             QDate date1 = QDate::fromString(minDateString, "yyyy-MM-dd");
             QDate date2 = QDate::fromString(maxDateString, "yyyy-MM-dd");
 
@@ -133,19 +121,25 @@ void FileFilterDialog::closeEvent(QCloseEvent *event)
 
             if(date1 > date2)
             {
-                QMessageBox::critical(this, "日期输入有误", "最小日期要小于最大日期！");
+                QMessageBox::critical(this, "日期输入有误", "最小日期要小于最大日期！设置成默认值了！");
                 date1 = QDate(1, 1, 1); // 重置为默认最小日期
                 date2 = QDate(9999, 12, 31); // 重置为默认最大日期
             }
+            config->min_date = date1.toString("yyyy-MM-dd").toStdString();
+            config->max_date = date2.toString("yyyy-MM-dd").toStdString();
 
-            qDebug() << date1 << date2;
         }
-
 
         if(sizeChk)
         {
             config->minSize = ui->minSizeSpinBox->value();
             config->maxSize = ui->maxSizeSpinBox->value();
+            if(config->minSize>config->maxSize)
+            {
+                QMessageBox::critical(this,"大小输入有误","大小输入有误，设为默认值了");
+                config->minSize = 0;
+                config->maxSize = 0x3f3f3f3f;
+            }
         }
 
         if(typeChk)
