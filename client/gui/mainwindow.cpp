@@ -9,8 +9,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setWindowTitle("Zpods");        // set window title
 
-
-//    ui->tabWidget->stackedWidget->setCurrentWidget(ui->backupPage);
     // create loginDialog
     this->loginDialog = new LoginDialog(this);
     this->loginDialog->hide();
@@ -204,6 +202,10 @@ void MainWindow::connectInit()
     enablePeriodBox();
     handleRegist();
     enableStartBtn();
+
+    enableRSrcBtn();
+    enableRTargetBtn();
+    enableRestoreBtn();
 }
 
 void MainWindow::handleRegist()
@@ -309,10 +311,49 @@ void MainWindow::handleBackup(BackupOptions * backupOptions)
 }
 
 
-//void MainWindow::handleRestore()
-//{
+void MainWindow::handleRestore(std::string src, std::string target, QString psw)
+{
+    zpods::BackupConfig config;
+    if(!psw.isEmpty())
+    {
+        config.crypto_config = zpods::CryptoConfig(psw.toStdString());
+    }
 
-//}
+    let status = zpods::restore(src.c_str(), target.c_str(), config);
+
+    switch (status) {
+        case zpods::Status::OK:
+            spdlog::info("restore succeeded");
+            QMessageBox::information(this,"成功","还原成功！！");
+            ui->rTargetPath->clear();
+            ui->rSrcPath->clear();
+            ui->rPswLineEdit->clear();
+            break;
+        case zpods::Status::NOT_ZPODS_FILE:
+            spdlog::error("restore failed: not a zpods file");
+            break;
+        case zpods::Status::ERROR:
+            spdlog::error("restore failed: unknown error");
+            break;
+        case zpods::Status::PASSWORD_NEEDED:
+            QMessageBox::critical(this,"错误","请输入密码！");
+            ui->rPswLineEdit->clear();
+            spdlog::error("restore failed: password needed");
+            break;
+        case zpods::Status::WRONG_PASSWORD:
+            QMessageBox::critical(this,"错误","解压密码错误！");
+            ui->rPswLineEdit->clear();
+            spdlog::error("restore failed: wrong password");
+            break;
+        case zpods::Status::CHECKSUM_ERROR:
+            QMessageBox::critical(this,"错误","文件损坏!");
+            spdlog::error("restore failed: checksum error");
+            break;
+        default:
+            QMessageBox::critical(this,"错误","未知错误");
+            spdlog::error("restore failed: unknown error");
+        }
+}
 
 void MainWindow::enableStartBtn()
 {
@@ -328,5 +369,43 @@ void MainWindow::enableStartBtn()
 
        delete backupOptions;
        this->backupOptions = new BackupOptions;
+    });
+}
+
+void MainWindow::enableRSrcBtn()
+{
+    connect(ui->rSrcBtn, &QPushButton::clicked,this,[&](){
+        QString fileName = QFileDialog::getOpenFileName(this,
+        "Open File",
+        QDir::homePath(),
+        "Zpods Files (*.pods);;All Files (*)");
+
+        // 如果用户选择了文件，显示文件名
+        if (!fileName.isEmpty()) {
+            ui->rSrcPath->setText(fileName);
+        }
+    });
+
+}
+
+void MainWindow::enableRTargetBtn()
+{
+    connect(ui->rTargetBtn, &QPushButton::clicked, this, [&](){
+        QString targetPath = QFileDialog::getExistingDirectory(this, "选择目的路径", QDir::homePath());
+
+        if (!targetPath.isEmpty())
+        {
+            ui->rTargetPath->setText(targetPath);
+        }
+    });
+}
+
+void MainWindow::enableRestoreBtn()
+{
+    connect(ui->restoreBtn,&QPushButton::clicked,this,[=](){
+        QString targetPath = ui->rTargetPath->text();
+        QString srcPath = ui->rSrcPath->text();
+        QString psw = ui->rPswLineEdit->text();
+        handleRestore(srcPath.toStdString(),targetPath.toStdString(),psw);
     });
 }

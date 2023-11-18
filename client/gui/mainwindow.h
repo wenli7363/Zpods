@@ -75,8 +75,12 @@ public:
     void enablePeriodBox();
     void handleRegist();
     void handleBackup(BackupOptions* backupOptions);
-    void handleRestore();
+    void handleRestore(std::string src, std::string target, QString psw);
     void enableStartBtn();
+
+    void enableRSrcBtn();
+    void enableRTargetBtn();
+    void enableRestoreBtn();
 
     // 功能函数
     void regist();
