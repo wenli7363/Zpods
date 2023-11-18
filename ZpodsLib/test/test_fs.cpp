@@ -87,7 +87,7 @@ TEST(FsTest, FileCollectorWithNames) {
         let filter_path = fs::path(test_data_path()) / fs::path("filter");
         filtered_paths_expect_eq(
                 {"man_printf.txt", "man_fork.txt", "hard_link_to_man_fork.txt"},
-                {
+                fs::FilesFilter{
                         .paths = {filter_path},
                         .types = {fs::FileType::regular},
                         .re_list = {"man"}

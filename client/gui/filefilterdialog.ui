@@ -32,7 +32,7 @@
        </sizepolicy>
       </property>
       <property name="text">
-       <string>文件大小（Byte）</string>
+       <string>文件大小</string>
       </property>
      </widget>
     </item>
@@ -50,7 +50,14 @@
      </widget>
     </item>
     <item>
-     <widget class="QSpinBox" name="minSizeSpinBox"/>
+     <widget class="QSpinBox" name="minSizeSpinBox">
+      <property name="maximum">
+       <number>999999999</number>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QComboBox" name="minComboBox"/>
     </item>
     <item>
      <spacer name="horizontalSpacer">
@@ -82,7 +89,14 @@
      </widget>
     </item>
     <item>
-     <widget class="QSpinBox" name="maxSizeSpinBox"/>
+     <widget class="QSpinBox" name="maxSizeSpinBox">
+      <property name="maximum">
+       <number>999999999</number>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QComboBox" name="maxComboBox"/>
     </item>
    </layout>
   </widget>
@@ -158,11 +172,24 @@
   <widget class="QLineEdit" name="reLineEdit">
    <property name="geometry">
     <rect>
-     <x>140</x>
+     <x>130</x>
      <y>260</y>
-     <width>261</width>
+     <width>231</width>
      <height>21</height>
     </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="rePushButton">
+   <property name="geometry">
+    <rect>
+     <x>390</x>
+     <y>260</y>
+     <width>80</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>添加</string>
    </property>
   </widget>
  </widget>

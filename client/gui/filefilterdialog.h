@@ -2,7 +2,7 @@
 #define FILEFILTERDIALOG_H
 
 #include <QDialog>
-#include <filesystem>
+#include "fs.h"
 #include <map>
 #include <QMessageBox>
 
@@ -14,11 +14,21 @@ using FileType = std::filesystem::file_type;
 
 struct FilterConfig
 {
-    bool sizeChk = false, dateChk=false, typeChk=false, reChk=false;
-    int minSize = 0, maxSize = 0x3f3f3f3f;
-    std::string min_date = "0001-01-01", max_date="9999-12-31";
+    bool sizeChk, dateChk, typeChk, reChk;
+    uintmax_t minSize , maxSize;
+    std::chrono::year_month_day min_date, max_date;
     std::unordered_set<FileType> types;     // types to backup
     std::vector<std::string> re_list;       // regular expressions
+
+    FilterConfig()
+    {
+        minSize = 0, maxSize = (uintmax_t)-1;
+        sizeChk = dateChk = typeChk = reChk = false;
+        min_date = zpods::fs::make_year_month_day(1, 1, 1);
+        max_date = zpods::fs::make_year_month_day(9999,12,31);
+        types = {FileType::regular};
+    }
+
 };
 
 
@@ -33,12 +43,14 @@ public:
     void connectInit();
     void closeEvent(QCloseEvent *event);
 signals:
-    void sentFilterConfig(FilterConfig* config);
+    void sentFilterConfig(std::shared_ptr<FilterConfig> config);
 
 
 private:
     Ui::FileFilterDialog *ui;
-    bool sizeChk, dateChk, reChk, typeChk;  // the state of 4 filter checkBox, false initialy
+    bool dateChk, sizeChk, reChk, typeChk;  // the state of 4 filter checkBox, false initialy
+
+    std::vector<std::string> reTmpList;
 };
 
 #endif // FILEFILTERDIALOG_H

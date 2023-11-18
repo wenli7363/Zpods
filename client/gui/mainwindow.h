@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "./ui_mainwindow.h"
 #include "pch.h"
 #include "logindialog.h"
 #include "filefilterdialog.h"
@@ -9,8 +10,19 @@
 #include "periodicwidget.h"
 #include "zpods_lib.h"
 #include "termios.h"
+#include "fs.h"
+
 #include <network.h>
 #include <QString>
+#include <QPushButton>
+#include <QFileDialog>
+#include <QDir>
+#include <QListWidget>
+#include <QStringList>
+#include <QMessageBox>
+#include <QInputDialog>
+#include <QDebug>
+
 
 struct BackupOptions
 {
@@ -19,8 +31,6 @@ struct BackupOptions
     std::string target_dir;
     std::string password;
     zpods::BackupConfig config;
-    std::string min_date;
-    std::string max_date;
     int interval;
 
     // fileter flag
@@ -34,8 +44,6 @@ struct BackupOptions
             : cmpsChk(false), encryptChk(false), synChk(false),
               periodChk(false), filterChk(false), remoteChk(false) {
 
-        std::string min_date = "0001-01-01";
-        std::string max_date = "9999-12-31";
         int interval = -1;
 
     }
@@ -66,7 +74,7 @@ public:
     void enableSynChkBox();
     void enablePeriodBox();
     void handleRegist();
-    void handleBackup();
+    void handleBackup(BackupOptions* backupOptions);
     void handleRestore();
     void enableStartBtn();
 
@@ -76,9 +84,9 @@ public:
 private:
     Ui::MainWindow *ui;
     LoginDialog* loginDialog;
-    FilterConfig* filterConfig;
+    std::shared_ptr<FilterConfig> filterConfig;
 
-    BackupOptions* tmpBackupOptions;    // 每次主界面的配置，之后会存起来持久化
+    BackupOptions* backupOptions;    // mainWindow Options
     zpods::User user;
 
 };

@@ -14,12 +14,20 @@ std::map<QString, FileType> fileTypeMap = {
     {"socket",FileType::socket},
 };
 
+std::map<QString,int> unitMap =
+{
+    {"B",1},
+    {"KB",1024},
+    {"MB",1024*1024},
+    {"GB",1024*1024*1024},
+};
+
 FileFilterDialog::FileFilterDialog(QWidget *parent) :
     QDialog(parent),
+    sizeChk(false), reChk(false), dateChk(false), typeChk(false),
     ui(new Ui::FileFilterDialog)
 {
     ui->setupUi(this);
-    sizeChk = dateChk = reChk = typeChk = false;
 
     ui->minSizeSpinBox->setEnabled(false);
     ui->maxSizeSpinBox->setEnabled(false);
@@ -27,9 +35,16 @@ FileFilterDialog::FileFilterDialog(QWidget *parent) :
     ui->minDateWidget->setEnabled(false);
     ui->typeFilterWidget->setEnabled(false);
     ui->reLineEdit->setEnabled(false);
+    ui->rePushButton->setEnabled(false);
+    ui->minComboBox->setEnabled(false);
+    ui->maxComboBox->setEnabled(false);
+
+
+    QStringList unit = {"B","KB","MB","GB"};
+    ui->minComboBox->addItems(unit);
+    ui->maxComboBox->addItems(unit);
 
     connectInit();
-
 }
 
 FileFilterDialog::~FileFilterDialog()
@@ -45,10 +60,14 @@ void FileFilterDialog::connectInit()
             sizeChk = true;
             ui->minSizeSpinBox->setEnabled(true);
             ui->maxSizeSpinBox->setEnabled(true);
+            ui->minComboBox->setEnabled(true);
+            ui->maxComboBox->setEnabled(true);
         }else{
             sizeChk = false;
             ui->minSizeSpinBox->setEnabled(false);
             ui->maxSizeSpinBox->setEnabled(false);
+            ui->minComboBox->setEnabled(false);
+            ui->maxComboBox->setEnabled(false);
         }
     });
 
@@ -68,11 +87,14 @@ void FileFilterDialog::connectInit()
     connect(ui->reChkBox, &QCheckBox::stateChanged, this, [=](){
         bool reChecked = ui->reChkBox->isChecked();
         if(reChecked){
+            reTmpList.clear();
             reChk = true;
             ui->reLineEdit->setEnabled(true);
+            ui->rePushButton->setEnabled(true);
         }else{
             reChk = false;
             ui->reLineEdit->setEnabled(false);
+            ui->rePushButton->setEnabled(false);
         }
     });
 
@@ -86,13 +108,29 @@ void FileFilterDialog::connectInit()
             ui->typeFilterWidget->setEnabled(false);
         }
     });
+
+    connect(ui->rePushButton,&QPushButton::clicked,this,[=]()
+    {
+        QString reInput = ui->reLineEdit->text();
+        if(!reInput.isEmpty())
+        {
+            QRegularExpression regex(reInput);
+
+            if(regex.isValid()){
+                reTmpList.push_back(reInput.toStdString());
+            }else{
+                QMessageBox::critical(this,"错误","无效的正则表达式，请重新输入！");
+            }
+            ui->reLineEdit->clear();
+        }
+    });
 }
 
 
 void FileFilterDialog::closeEvent(QCloseEvent *event)
 {
     // 保存所有的配置信息
-    FilterConfig* config = new FilterConfig;
+    std::shared_ptr<FilterConfig> config = std::make_shared<FilterConfig>();
 
     {
         config->dateChk = dateChk;
@@ -103,11 +141,11 @@ void FileFilterDialog::closeEvent(QCloseEvent *event)
         if(dateChk)
         {
             // 获取日期
-            QString minDateString = ui->minDateWidget->dateLineEdit->text();
-            QString maxDateString = ui->maxDateWidget->dateLineEdit->text();
+            QString minDateQString = ui->minDateWidget->dateLineEdit->text();
+            QString maxDateQString = ui->maxDateWidget->dateLineEdit->text();
 
-            QDate date1 = QDate::fromString(minDateString, "yyyy-MM-dd");
-            QDate date2 = QDate::fromString(maxDateString, "yyyy-MM-dd");
+            QDate date1 = QDate::fromString(minDateQString, "yyyy-MM-dd");
+            QDate date2 = QDate::fromString(maxDateQString, "yyyy-MM-dd");
 
             if(!date1.isValid())
             {
@@ -125,20 +163,37 @@ void FileFilterDialog::closeEvent(QCloseEvent *event)
                 date1 = QDate(1, 1, 1); // 重置为默认最小日期
                 date2 = QDate(9999, 12, 31); // 重置为默认最大日期
             }
-            config->min_date = date1.toString("yyyy-MM-dd").toStdString();
-            config->max_date = date2.toString("yyyy-MM-dd").toStdString();
 
+            std::string minDateStd = date1.toString("yyyy-MM-dd").toStdString();
+            let year1 = std::stoi(minDateStd.substr(0, 4));
+            let month1 = std::stoi(minDateStd.substr(5, 2));
+            let day1 = std::stoi(minDateStd.substr(8, 2));
+            config->min_date = zpods::fs::make_year_month_day(year1, month1, day1);
+
+
+            std::string maxDateStd = date2.toString("yyyy-MM-dd").toStdString();
+            let year2 = std::stoi(maxDateStd.substr(0, 4));
+            let month2 = std::stoi(maxDateStd.substr(5, 2));
+            let day2 = std::stoi(maxDateStd.substr(8, 2));
+            config->max_date= zpods::fs::make_year_month_day(year2, month2, day2);
         }
 
         if(sizeChk)
         {
-            config->minSize = ui->minSizeSpinBox->value();
-            config->maxSize = ui->maxSizeSpinBox->value();
+            int min = ui->minSizeSpinBox->value();
+            int max = ui->maxSizeSpinBox->value();
+
+            QString minUnit = ui->minComboBox->currentText();
+            QString maxUnit = ui->maxComboBox->currentText();
+
+            config->minSize = min * unitMap[minUnit];
+            config->maxSize = max * unitMap[maxUnit];
+
             if(config->minSize>config->maxSize)
             {
                 QMessageBox::critical(this,"大小输入有误","大小输入有误，设为默认值了");
                 config->minSize = 0;
-                config->maxSize = 0x3f3f3f3f;
+                config->maxSize = (uintmax_t)-1;
             }
         }
 
@@ -158,16 +213,15 @@ void FileFilterDialog::closeEvent(QCloseEvent *event)
         }
 
 
-//        if(reChk)
-//        {
-
-//        }
+        if(reChk)
+        {
+            config->re_list = reTmpList;
+        }
     }
 
 
     // 在对话框关闭时发射sentFilterConfig信号
     emit sentFilterConfig(config);
-    delete config;
     // 调用父类的关闭事件处理函数
     QDialog::closeEvent(event);
 }
