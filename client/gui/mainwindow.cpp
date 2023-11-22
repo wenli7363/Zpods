@@ -15,6 +15,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     this->filterConfig = nullptr;
     backupOptions = BackupOptions();
+
+    ui->srcListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
     // set the connect function of two chkBox
     connectInit();
 }
@@ -95,17 +98,25 @@ void MainWindow::enableSrcBtn()
         {
             QStringList srcFileList = dialog->selectedFiles();
 
-            ui->srcListWidget->clear();
-            backupOptions.src_path_list.clear();
+//            ui->srcListWidget->clear();
 
             for(const auto& fileName : srcFileList)
             {
                 QListWidgetItem* item = new QListWidgetItem(fileName);
                 ui->srcListWidget->addItem(item);
-
-                backupOptions.src_path_list.push_back(fileName.toStdString());
             }
+        }
+    });
+}
 
+void MainWindow::enableDeleteBtn()
+{
+    connect(ui->deleteBtn,&QPushButton::clicked,this,[&](){
+        QList<QListWidgetItem *> selectedItems = ui->srcListWidget->selectedItems();
+        for (QListWidgetItem *item : selectedItems)
+        {
+            int row = ui->srcListWidget->row(item);
+            delete ui->srcListWidget->takeItem(row);
         }
     });
 }
@@ -188,6 +199,7 @@ void MainWindow::connectInit()
     enableRemote();
     enableFileFilter();
     enableSrcBtn();
+    enableDeleteBtn();
     enableTargetBtn();
 
     enableCmpsChkBox();
@@ -221,6 +233,13 @@ void MainWindow::handleRegist()
 
 void MainWindow::handleBackup(BackupOptions backupOptions)
 {
+    for (int i = 0; i < ui->srcListWidget->count(); ++i)
+    {
+        QListWidgetItem *item = ui->srcListWidget->item(i);
+        QString text = item->text();
+        backupOptions.src_path_list.push_back(text.toStdString());
+    }
+
     // config paths
    if (backupOptions.src_path_list.empty()) {
        QMessageBox::critical(this, "提示", "请选择要备份的文件！");

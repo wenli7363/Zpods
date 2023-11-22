@@ -37,6 +37,7 @@ public:
     void enableFileFilter();
     void enableRemote();
     void enableSrcBtn();
+    void enableDeleteBtn();
     void enableTargetBtn();
     void enableCmpsChkBox();
     void enableEncryptChkBox();

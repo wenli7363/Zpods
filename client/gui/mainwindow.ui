@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>559</width>
-    <height>549</height>
+    <width>558</width>
+    <height>550</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -135,11 +135,22 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="srcBtn">
-            <property name="text">
-             <string>选择</string>
-            </property>
-           </widget>
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <item>
+             <widget class="QPushButton" name="srcBtn">
+              <property name="text">
+               <string>选择</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="deleteBtn">
+              <property name="text">
+               <string>删除</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </widget>
@@ -310,6 +321,48 @@
      <attribute name="title">
       <string>任务监视</string>
      </attribute>
+     <widget class="QWidget" name="">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>511</width>
+        <height>481</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>正在运行中</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListView" name="listView"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_3">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>已完成</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListView" name="listView_2"/>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </widget>
   </widget>
