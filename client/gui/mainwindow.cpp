@@ -102,8 +102,12 @@ void MainWindow::enableSrcBtn()
 
             for(const auto& fileName : srcFileList)
             {
-                QListWidgetItem* item = new QListWidgetItem(fileName);
-                ui->srcListWidget->addItem(item);
+                if(!srcSet.contains(fileName))
+                {
+                    srcSet.insert(fileName);
+                    QListWidgetItem* item = new QListWidgetItem(fileName);
+                    ui->srcListWidget->addItem(item);
+                }
             }
         }
     });
@@ -116,6 +120,8 @@ void MainWindow::enableDeleteBtn()
         for (QListWidgetItem *item : selectedItems)
         {
             int row = ui->srcListWidget->row(item);
+            QString itemText = item -> text();
+            srcSet.remove(itemText);
             delete ui->srcListWidget->takeItem(row);
         }
     });
@@ -308,9 +314,18 @@ void MainWindow::handleBackup(BackupOptions backupOptions)
     ui->remoteChkBox->setCheckState(Qt::Unchecked);
     ui->synChkBox->setCheckState(Qt::Unchecked);
     ui->periodicWidget->setUnchecked();
+    srcSet.clear();
 
     // clear when thread finished
     connect(backupThread, &QThread::finished, backupThread, &QObject::deleteLater);
+
+    // monitor thread
+    connect(backupThread, &BackupThread::startedSignal,this,[=](ThreadInfo info){
+        // 设置monitor界面
+    });
+    connect(backupThread,&BackupThread::finishedSignal,this,[=](ThreadInfo info){
+
+    });
 
     // 启动线程
     backupThread->start();

@@ -14,6 +14,7 @@
 #include <QStringList>
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QSet>
 #include <QDebug>
 
 
@@ -61,6 +62,7 @@ private:
     std::shared_ptr<FilterConfig> filterConfig;
 
     BackupOptions backupOptions;    // mainWindow Options
+    QSet<QString> srcSet;
     zpods::User user;
 
 };

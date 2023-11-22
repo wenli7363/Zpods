@@ -5,6 +5,7 @@ BackupThread::BackupThread(QObject *parent) : QThread(parent)
 {
     // 初始化备份相关的成员变量
    this->backupOptions = BackupOptions();
+    this->TaskID = getTaskID();
 }
 
 BackupThread::~BackupThread()
@@ -16,10 +17,15 @@ void BackupThread::setBackupParameters(BackupOptions backupOptions)
 {
     // 设置备份相关参数的实现
     this->backupOptions = backupOptions;
+
+     Info.taskID = (QThread::currentThreadId() *31) % 1003;  // magic number做hash
+     Info.filename = QString::fromStdString(backupOptions.config.backup_filename);
+
 }
 
 void BackupThread::run()
 {
+    emit startedSignal(Info);
     // 执行备份任务的实现
     do{
         if(backupOptions.synChk)
@@ -45,4 +51,11 @@ void BackupThread::run()
         }
 
     }while(backupOptions.interval>0);
+
+    emit finishedSignal(Info);
+}
+
+int BackupThread::getTaskID()
+{
+
 }
