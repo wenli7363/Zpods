@@ -33,3 +33,8 @@ int PeriodicWidget::getValue()
 {
     return ui->spinBox->value();
 }
+
+void PeriodicWidget::setUnchecked()
+{
+    ui->checkBox->setCheckState(Qt::Unchecked);
+}

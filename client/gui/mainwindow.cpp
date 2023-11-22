@@ -279,16 +279,19 @@ void MainWindow::handleBackup(BackupOptions backupOptions)
     BackupThread *backupThread = new BackupThread(this);
     backupThread->setBackupParameters(backupOptions);
 
-    // clear when thread finished
-    connect(backupThread, &QThread::finished, backupThread, &QObject::deleteLater);
+    this->backupOptions = BackupOptions();
 
     ui->srcListWidget->clear();
     ui->targetPath->clear();
     ui->filterChkBox->setCheckState(Qt::Unchecked);
-    ui->cmpsChkBox->setCheckable(Qt::Unchecked);
-    ui->encryptChkBox->setCheckable(Qt::Unchecked);
-    ui->remoteChkBox->setCheckable(Qt::Unchecked);
-    this->backupOptions = BackupOptions();
+    ui->cmpsChkBox->setCheckState(Qt::Unchecked);
+    ui->encryptChkBox->setCheckState(Qt::Unchecked);
+    ui->remoteChkBox->setCheckState(Qt::Unchecked);
+    ui->synChkBox->setCheckState(Qt::Unchecked);
+    ui->periodicWidget->setUnchecked();
+
+    // clear when thread finished
+    connect(backupThread, &QThread::finished, backupThread, &QObject::deleteLater);
 
     // 启动线程
     backupThread->start();
@@ -342,12 +345,8 @@ void MainWindow::handleRestore(std::string src, std::string target, QString psw)
 void MainWindow::enableStartBtn()
 {
     connect(ui->startBtn, &QPushButton::clicked,this,[&](){
-
        // 另起一个thread
        handleBackup(backupOptions);
-
-       // 删除旧配置
-
     });
 }
 

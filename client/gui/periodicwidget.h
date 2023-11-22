@@ -16,6 +16,7 @@ public:
     ~PeriodicWidget();
 
     int getValue();
+    void setUnchecked();
 
 signals:
     void sentPeriodOpen();
