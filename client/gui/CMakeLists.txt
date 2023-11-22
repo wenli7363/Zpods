@@ -34,6 +34,8 @@ set(PROJECT_SOURCES
         multiselectcombobox.cpp
         myfiledialog.h
         myfiledialog.cpp
+        backupthread.h
+        backupthread.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
