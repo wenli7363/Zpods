@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
     backupOptions = BackupOptions();
 
     ui->srcListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
-
+    ui->ingList->setViewMode(QListView::ListMode);
     // set the connect function of two chkBox
     connectInit();
 }
@@ -81,6 +81,7 @@ void MainWindow::enableSrcBtn()
 {
     connect(ui->srcBtn, &QPushButton::clicked, this, [=](){
         MyFileDialog *dialog =new MyFileDialog(this);
+        dialog->setDirectory(QDir::homePath());
         dialog->setOption(QFileDialog::DontUseNativeDialog,true);
 
         //支持多选
@@ -320,11 +321,27 @@ void MainWindow::handleBackup(BackupOptions backupOptions)
     connect(backupThread, &QThread::finished, backupThread, &QObject::deleteLater);
 
     // monitor thread
-    connect(backupThread, &BackupThread::startedSignal,this,[=](ThreadInfo info){
+   connect(backupThread, &BackupThread::startedSignal,this,[&](ThreadInfo info){
         // 设置monitor界面
-    });
-    connect(backupThread,&BackupThread::finishedSignal,this,[=](ThreadInfo info){
+       QWidget *widget = new QWidget();
+       QHBoxLayout *layout = new QHBoxLayout(widget);
 
+       QLabel *labelID = new QLabel(QString::number(info.taskID));
+       labelID->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+       layout->addWidget(labelID,1);
+
+       QLabel *labelName = new QLabel(info.filename);
+       labelName->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+       layout->addWidget(labelName,9);
+
+       QListWidgetItem *item = new QListWidgetItem(ui->ingList);
+
+       item->setSizeHint(widget->sizeHint());
+       ui->ingList->setItemWidget(item, widget);
+    });
+
+    connect(backupThread,&BackupThread::finishedSignal,this,[&](ThreadInfo info){
+        qDebug()<<"线程关闭了!";
     });
 
     // 启动线程

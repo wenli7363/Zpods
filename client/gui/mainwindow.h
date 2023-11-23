@@ -16,6 +16,9 @@
 #include <QInputDialog>
 #include <QSet>
 #include <QDebug>
+#include <QListWidgetItem>
+#include <QTableWidget>
+#include <QTableWidgetItem>
 
 
 
@@ -67,3 +70,6 @@ private:
 
 };
 #endif // MAINWINDOW_H
+
+
+
