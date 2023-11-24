@@ -18,6 +18,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->srcListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
     ui->ingList->setViewMode(QListView::ListMode);
+
+    qRegisterMetaType<ThreadInfo>("ThreadInfo");
     // set the connect function of two chkBox
     connectInit();
 }
@@ -261,13 +263,13 @@ void MainWindow::handleBackup(BackupOptions backupOptions)
     }
 
 // 是否指定文件名
-//    QString backupName = QInputDialog::getText(this, "请输入打包文件名", "请输入打包文件名:");
-//    if(backupName.isEmpty())
-//    {
-//        QMessageBox::critical(this, "提示", "请输入打包后的文件名！");
-//        return;
-//    }
-//    backupOptions->config.backup_filename = backupName.toStdString();
+    QString backupName = QInputDialog::getText(this, "请输入打包文件名", "请输入打包文件名:");
+    if(backupName.isEmpty())
+    {
+        QMessageBox::critical(this, "提示", "请输入打包后的文件名！");
+        return;
+    }
+    backupOptions.config.backup_filename = backupName.toStdString();
 
     backupOptions.config.filter.paths = std::vector<zpods::fs::zpath>(backupOptions.src_path_list.begin(), backupOptions.src_path_list.end());
 
@@ -335,13 +337,45 @@ void MainWindow::handleBackup(BackupOptions backupOptions)
        layout->addWidget(labelName,9);
 
        QListWidgetItem *item = new QListWidgetItem(ui->ingList);
-
+       item->setFlags(item->flags() & ~(Qt::ItemIsSelectable | Qt::ItemIsEnabled));
        item->setSizeHint(widget->sizeHint());
+       threadItemMap[backupThread] = item;
+
        ui->ingList->setItemWidget(item, widget);
     });
 
     connect(backupThread,&BackupThread::finishedSignal,this,[&](ThreadInfo info){
-        qDebug()<<"线程关闭了!";
+        QListWidgetItem *removeItem = threadItemMap.value(backupThread);
+
+        if (removeItem) {
+                // 手动释放资源
+                QWidget *widget = ui->ingList->itemWidget(removeItem);
+                delete widget;
+
+                // 从 ListWidget 中移除 item
+                ui->ingList->removeItemWidget(removeItem);
+                delete removeItem;
+
+                // 从 QMap 中移除对应的映射关系
+                threadItemMap.remove(backupThread);
+            }
+        QWidget *widget = new QWidget();
+        QHBoxLayout *layout = new QHBoxLayout(widget);
+
+        QLabel *labelID = new QLabel(QString::number(info.taskID));
+        labelID->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+        layout->addWidget(labelID,1);
+
+        QLabel *labelName = new QLabel(info.filename);
+        labelName->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+        layout->addWidget(labelName,9);
+
+        QListWidgetItem *item = new QListWidgetItem(ui->edList);
+        item->setFlags(item->flags() & ~(Qt::ItemIsSelectable | Qt::ItemIsEnabled));
+        item->setSizeHint(widget->sizeHint());
+        threadItemMap[backupThread] = item;
+
+        ui->edList->setItemWidget(item, widget);
     });
 
     // 启动线程

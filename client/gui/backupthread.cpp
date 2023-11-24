@@ -21,7 +21,7 @@ void BackupThread::setBackupParameters(BackupOptions backupOptions)
 void BackupThread::run()
 {
     ThreadInfo Info;
-    Info.taskID = qHash(QThread::currentThreadId());
+    Info.taskID = qHash(QThread::currentThreadId()) % 1007;
     Info.filename = QString::fromStdString(backupOptions.config.backup_filename.value_or(""));
 
     emit startedSignal(Info);

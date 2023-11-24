@@ -68,6 +68,8 @@ private:
     QSet<QString> srcSet;
     zpods::User user;
 
+   QMap<QThread*, QListWidgetItem*> threadItemMap;
+
 };
 #endif // MAINWINDOW_H
 

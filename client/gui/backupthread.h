@@ -16,7 +16,7 @@
 #include <QDebug>
 
 struct ThreadInfo{
-    int taskID;
+    uint taskID;
     QString filename;
 };
 
