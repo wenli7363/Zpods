@@ -58,6 +58,7 @@ public:
 
     // 功能函数
     void regist();
+    void setRowData(int row, const QString &data);
 
 private:
     Ui::MainWindow *ui;
@@ -68,8 +69,8 @@ private:
     QSet<QString> srcSet;
     zpods::User user;
 
-   QMap<QThread*, QListWidgetItem*> threadItemMap;
-
+//   QMap<QThread*, QListWidgetItem*> threadItemMap;
+    int ingRow,edRow;  // 当前监视列表的任务数（行号+1）
 };
 #endif // MAINWINDOW_H
 

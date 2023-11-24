@@ -315,26 +315,6 @@
        <attribute name="title">
         <string>任务监视</string>
        </attribute>
-       <widget class="QListWidget" name="ingList">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>40</y>
-          <width>511</width>
-          <height>211</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QListWidget" name="edList">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>280</y>
-          <width>511</width>
-          <height>211</height>
-         </rect>
-        </property>
-       </widget>
        <widget class="QLabel" name="label_2">
         <property name="geometry">
          <rect>
@@ -369,6 +349,26 @@
         </property>
         <property name="text">
          <string>已完成</string>
+        </property>
+       </widget>
+       <widget class="QTableWidget" name="edTable">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>280</y>
+          <width>521</width>
+          <height>221</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QTableWidget" name="ingTable">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>521</width>
+          <height>221</height>
+         </rect>
         </property>
        </widget>
       </widget>

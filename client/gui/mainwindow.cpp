@@ -17,7 +17,23 @@ MainWindow::MainWindow(QWidget *parent)
     backupOptions = BackupOptions();
 
     ui->srcListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    ui->ingList->setViewMode(QListView::ListMode);
+
+    QStringList headerLabels;
+    headerLabels <<"任务号"<<"保存的文件名";
+    ui->ingTable->setRowCount(10);
+    ui->edTable->setRowCount(10);
+    ui->ingTable->verticalHeader()->setVisible(false);
+    ui->edTable->verticalHeader()->setVisible(false);
+    ui->ingTable->setColumnCount(2);
+    ui->edTable->setColumnCount(2);
+    ui->ingTable->setHorizontalHeaderLabels(headerLabels);
+    ui->edTable->setHorizontalHeaderLabels(headerLabels);
+    ui->ingTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->edTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->ingTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->edTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+
+    ingRow = edRow = 0;
 
     qRegisterMetaType<ThreadInfo>("ThreadInfo");
     // set the connect function of two chkBox
@@ -325,57 +341,23 @@ void MainWindow::handleBackup(BackupOptions backupOptions)
     // monitor thread
    connect(backupThread, &BackupThread::startedSignal,this,[&](ThreadInfo info){
         // 设置monitor界面
-       QWidget *widget = new QWidget();
-       QHBoxLayout *layout = new QHBoxLayout(widget);
+       // 这里是否做映射，有待考虑
+//       QString record = QString("%1 %2").arg(info.taskID).arg(info.filename);
+       if (ingRow >= ui->ingTable->rowCount()) {
+           ui->ingTable->setRowCount(ingRow + 1);
+       }
+       QStringList record = {QString::number(info.taskID),info.filename};
 
-       QLabel *labelID = new QLabel(QString::number(info.taskID));
-       labelID->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-       layout->addWidget(labelID,1);
+       for (int col = 0; col < 2; ++col) {
+               QTableWidgetItem *item = new QTableWidgetItem(record[col]);
+               ui->ingTable->setItem(ingRow, col, item);
+           }
 
-       QLabel *labelName = new QLabel(info.filename);
-       labelName->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-       layout->addWidget(labelName,9);
-
-       QListWidgetItem *item = new QListWidgetItem(ui->ingList);
-       item->setFlags(item->flags() & ~(Qt::ItemIsSelectable | Qt::ItemIsEnabled));
-       item->setSizeHint(widget->sizeHint());
-       threadItemMap[backupThread] = item;
-
-       ui->ingList->setItemWidget(item, widget);
-    });
+        ingRow++;
+   });
 
     connect(backupThread,&BackupThread::finishedSignal,this,[&](ThreadInfo info){
-        QListWidgetItem *removeItem = threadItemMap.value(backupThread);
 
-        if (removeItem) {
-                // 手动释放资源
-                QWidget *widget = ui->ingList->itemWidget(removeItem);
-                delete widget;
-
-                // 从 ListWidget 中移除 item
-                ui->ingList->removeItemWidget(removeItem);
-                delete removeItem;
-
-                // 从 QMap 中移除对应的映射关系
-                threadItemMap.remove(backupThread);
-            }
-        QWidget *widget = new QWidget();
-        QHBoxLayout *layout = new QHBoxLayout(widget);
-
-        QLabel *labelID = new QLabel(QString::number(info.taskID));
-        labelID->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-        layout->addWidget(labelID,1);
-
-        QLabel *labelName = new QLabel(info.filename);
-        labelName->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-        layout->addWidget(labelName,9);
-
-        QListWidgetItem *item = new QListWidgetItem(ui->edList);
-        item->setFlags(item->flags() & ~(Qt::ItemIsSelectable | Qt::ItemIsEnabled));
-        item->setSizeHint(widget->sizeHint());
-        threadItemMap[backupThread] = item;
-
-        ui->edList->setItemWidget(item, widget);
     });
 
     // 启动线程
@@ -471,4 +453,15 @@ void MainWindow::enableRestoreBtn()
         QString psw = ui->rPswLineEdit->text();
         handleRestore(srcPath.toStdString(),targetPath.toStdString(),psw);
     });
+}
+
+void MainWindow::setRowData(int row, const QString &data)
+{
+    if (row >= ui->ingTable->rowCount()) {
+        ui->ingTable->setRowCount(row + 1);
+    }
+    for (int col = 0; col < data.size(); ++col) {
+            QTableWidgetItem *item = new QTableWidgetItem(data);
+            ui->ingTable->setItem(row, col, item);
+        }
 }
