@@ -19,19 +19,35 @@ MainWindow::MainWindow(QWidget *parent)
     ui->srcListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
     QStringList headerLabels;
-    headerLabels <<"任务号"<<"保存的文件名";
-    ui->ingTable->setRowCount(10);
-    ui->edTable->setRowCount(10);
+    headerLabels <<"任务号"<<"保存的文件名"<<"压缩"<<"加密"<<"同步"<<"远程"<<"周期(s)";
+    ui->ingTable->setRowCount(6);
+    ui->edTable->setRowCount(6);
     ui->ingTable->verticalHeader()->setVisible(false);
     ui->edTable->verticalHeader()->setVisible(false);
-    ui->ingTable->setColumnCount(2);
-    ui->edTable->setColumnCount(2);
+    ui->ingTable->setColumnCount(7);
+    ui->edTable->setColumnCount(7);
     ui->ingTable->setHorizontalHeaderLabels(headerLabels);
     ui->edTable->setHorizontalHeaderLabels(headerLabels);
-    ui->ingTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    ui->edTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->ingTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->edTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->ingTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->edTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+
+    // 定义每一列的百分比
+    QList<int> columnWidths = {10, 50, 7, 7, 7, 7, 12};  // 以百分比表示每一列的宽度
+
+    int ingWidth = ui->ingTable->width();  // 获取TableWidget的宽度
+    int edWidth  = ui->edTable->width();
+    // 计算并设置每一列的宽度
+    for (int i = 0; i < columnWidths.size(); ++i) {
+        int width1 = ingWidth * columnWidths[i] / 100;
+        int width2 = edWidth * columnWidths[i] / 100;
+        ui->ingTable->horizontalHeader()->resizeSection(i, width1);
+        ui->edTable->horizontalHeader()->resizeSection(i,width2);
+    }
+
+
 
     ingRow = edRow = 0;
 
@@ -285,6 +301,7 @@ void MainWindow::handleBackup(BackupOptions backupOptions)
         QMessageBox::critical(this, "提示", "请输入打包后的文件名！");
         return;
     }
+    backupName +=PODS_FILE_SUFFIX;
     backupOptions.config.backup_filename = backupName.toStdString();
 
     backupOptions.config.filter.paths = std::vector<zpods::fs::zpath>(backupOptions.src_path_list.begin(), backupOptions.src_path_list.end());
@@ -342,13 +359,19 @@ void MainWindow::handleBackup(BackupOptions backupOptions)
    connect(backupThread, &BackupThread::startedSignal,this,[&](ThreadInfo info){
         // 设置monitor界面
        // 这里是否做映射，有待考虑
-//       QString record = QString("%1 %2").arg(info.taskID).arg(info.filename);
        if (ingRow >= ui->ingTable->rowCount()) {
            ui->ingTable->setRowCount(ingRow + 1);
        }
-       QStringList record = {QString::number(info.taskID),info.filename};
+       QStringList record;
+       record << QString::number(info.taskID)
+              << info.filename
+              << info.cmps
+              << info.encrypt
+              << info.syn
+              << info.remote
+              << info.period;
 
-       for (int col = 0; col < 2; ++col) {
+       for (int col = 0; col < 7; ++col) {
                QTableWidgetItem *item = new QTableWidgetItem(record[col]);
                ui->ingTable->setItem(ingRow, col, item);
            }
@@ -357,6 +380,29 @@ void MainWindow::handleBackup(BackupOptions backupOptions)
    });
 
     connect(backupThread,&BackupThread::finishedSignal,this,[&](ThreadInfo info){
+        for (int row = 0; row < ui->ingTable->rowCount(); ++row) {
+                if (ui->ingTable->item(row, 0)->text() == QString::number(info.taskID) ) {
+                    ui->ingTable->removeRow(row);
+                    ingRow--;
+                    break;
+                }
+            }
+
+        // move to edTable
+        QStringList record;
+        record << QString::number(info.taskID)
+               << info.filename
+               << info.cmps
+               << info.encrypt
+               << info.syn
+               << info.remote
+               << info.period;
+
+        for (int col = 0; col < 7; ++col) {
+            QTableWidgetItem *item = new QTableWidgetItem(record[col]);
+            ui->edTable->setItem(edRow, col, item);
+        }
+        edRow++;
 
     });
 

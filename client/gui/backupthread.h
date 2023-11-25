@@ -18,6 +18,7 @@
 struct ThreadInfo{
     uint taskID;
     QString filename;
+    QString cmps,syn,encrypt,remote,period;
 };
 
 struct BackupOptions
@@ -56,6 +57,7 @@ public:
 
     // 设置备份相关参数的函数
     void setBackupParameters(BackupOptions backupOptions);
+    ThreadInfo setThreadInfo();
 signals:
     void startedSignal(ThreadInfo info);
     void finishedSignal(ThreadInfo info);

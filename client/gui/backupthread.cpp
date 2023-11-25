@@ -20,9 +20,7 @@ void BackupThread::setBackupParameters(BackupOptions backupOptions)
 
 void BackupThread::run()
 {
-    ThreadInfo Info;
-    Info.taskID = qHash(QThread::currentThreadId()) % 1007;
-    Info.filename = QString::fromStdString(backupOptions.config.backup_filename.value_or(""));
+    ThreadInfo Info = this->setThreadInfo();
 
     emit startedSignal(Info);
     // 执行备份任务的实现
@@ -52,4 +50,18 @@ void BackupThread::run()
     }while(backupOptions.interval>0);
 
     emit finishedSignal(Info);
+}
+
+ThreadInfo BackupThread::setThreadInfo()
+{
+    ThreadInfo Info;
+    Info.taskID = qHash(QThread::currentThreadId()) % 1007;
+    Info.filename = QString::fromStdString(backupOptions.config.backup_filename.value_or(""));
+    Info.cmps = backupOptions.cmpsChk ? "√" : "";
+    Info.syn = backupOptions.synChk ? "√" : "";
+    Info.encrypt = backupOptions.encryptChk ? "√" : "";
+    Info.remote = backupOptions.remoteChk ? "√" : "";
+
+    Info.period = backupOptions.periodChk ? QString::number(backupOptions.interval) : "";
+    return Info;
 }
