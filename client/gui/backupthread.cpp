@@ -5,6 +5,7 @@ BackupThread::BackupThread(QObject *parent) : QThread(parent)
 {
     // 初始化备份相关的成员变量
    this->backupOptions = BackupOptions();
+   this->shouldExit = false;
 }
 
 BackupThread::~BackupThread()
@@ -20,36 +21,35 @@ void BackupThread::setBackupParameters(BackupOptions backupOptions)
 
 void BackupThread::run()
 {
-    ThreadInfo Info = this->setThreadInfo();
+        ThreadInfo Info = this->setThreadInfo();
+        emit startedSignal(Info);
+        // 执行备份任务的实现
+        do{
+            if(backupOptions.synChk)
+            {
+                zpods::sync_backup(backupOptions.target_dir.c_str(), backupOptions.config);
+            }else{
+                zpods::backup(backupOptions.target_dir.c_str(), backupOptions.config);
+            }
 
-    emit startedSignal(Info);
-    // 执行备份任务的实现
-    do{
-        if(backupOptions.synChk)
-        {
-            zpods::sync_backup(backupOptions.target_dir.c_str(), backupOptions.config);
-        }else{
-            zpods::backup(backupOptions.target_dir.c_str(), backupOptions.config);
-        }
+    //        let backup_file_path = fmt::format("{}/{}", backupOptions.target_dir.c_str(), backupOptions.config.backup_filename->c_str());
+    //        if (backupOptions.remoteChk) {
+    //            let status = user.upload_file(backup_file_path.c_str());
+    //            if (status == zpods::Status::OK) {
+    //                spdlog::info("upload successfully!");
+    //            } else {
+    //                spdlog::info("fail to upload");
+    //            }
+    //        }
 
-//        let backup_file_path = fmt::format("{}/{}", backupOptions.target_dir.c_str(), backupOptions.config.backup_filename->c_str());
-//        if (backupOptions.remoteChk) {
-//            let status = user.upload_file(backup_file_path.c_str());
-//            if (status == zpods::Status::OK) {
-//                spdlog::info("upload successfully!");
-//            } else {
-//                spdlog::info("fail to upload");
-//            }
-//        }
+            if(backupOptions.periodChk)
+            {
+                std::this_thread::sleep_for(std::chrono::seconds(backupOptions.interval));
+            }
+            qDebug()<<"thread exe";
+        }while(backupOptions.interval>0 && !shouldExit.load());
 
-        if(backupOptions.periodChk)
-        {
-            std::this_thread::sleep_for(std::chrono::seconds(backupOptions.interval));
-        }
-
-    }while(backupOptions.interval>0);
-
-    emit finishedSignal(Info);
+        emit finishedSignal(Info);
 }
 
 ThreadInfo BackupThread::setThreadInfo()
@@ -64,4 +64,8 @@ ThreadInfo BackupThread::setThreadInfo()
 
     Info.period = backupOptions.periodChk ? QString::number(backupOptions.interval) : "";
     return Info;
+}
+
+void BackupThread::setShouldExit(bool value) {
+    shouldExit.store(value);
 }

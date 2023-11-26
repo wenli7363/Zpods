@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>558</width>
-    <height>550</height>
+    <width>564</width>
+    <height>549</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -289,8 +289,8 @@
        <widget class="QPushButton" name="restoreBtn">
         <property name="geometry">
          <rect>
-          <x>170</x>
-          <y>340</y>
+          <x>190</x>
+          <y>350</y>
           <width>151</width>
           <height>71</height>
          </rect>
@@ -354,9 +354,9 @@
        <widget class="QTableWidget" name="edTable">
         <property name="geometry">
          <rect>
-          <x>10</x>
+          <x>0</x>
           <y>280</y>
-          <width>521</width>
+          <width>541</width>
           <height>221</height>
          </rect>
         </property>
@@ -364,11 +364,24 @@
        <widget class="QTableWidget" name="ingTable">
         <property name="geometry">
          <rect>
-          <x>10</x>
+          <x>0</x>
           <y>30</y>
-          <width>521</width>
+          <width>541</width>
           <height>221</height>
          </rect>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="threadStopBtn">
+        <property name="geometry">
+         <rect>
+          <x>430</x>
+          <y>5</y>
+          <width>91</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>终止线程</string>
         </property>
        </widget>
       </widget>

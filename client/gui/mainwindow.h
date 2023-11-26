@@ -55,10 +55,10 @@ public:
     void enableRSrcBtn();
     void enableRTargetBtn();
     void enableRestoreBtn();
+    void enableThreadStopBtn();
 
     // 功能函数
     void regist();
-    void setRowData(int row, const QString &data);
 
 private:
     Ui::MainWindow *ui;
@@ -70,6 +70,7 @@ private:
     zpods::User user;
 
 //   QMap<QThread*, QListWidgetItem*> threadItemMap;
+    QMap<uint, BackupThread*> threadMap;
     int ingRow,edRow;  // 当前监视列表的任务数（行号+1）
 };
 #endif // MAINWINDOW_H

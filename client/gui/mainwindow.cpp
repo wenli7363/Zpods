@@ -32,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->edTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->ingTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->edTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->ingTable->setSelectionMode(QAbstractItemView::SingleSelection);
 
 
     // 定义每一列的百分比
@@ -249,6 +250,7 @@ void MainWindow::connectInit()
     enablePeriodBox();
     handleRegist();
     enableStartBtn();
+    enableThreadStopBtn();
 
     enableRSrcBtn();
     enableRTargetBtn();
@@ -356,7 +358,8 @@ void MainWindow::handleBackup(BackupOptions backupOptions)
     connect(backupThread, &QThread::finished, backupThread, &QObject::deleteLater);
 
     // monitor thread
-   connect(backupThread, &BackupThread::startedSignal,this,[&](ThreadInfo info){
+   connect(backupThread, &BackupThread::startedSignal,this,[this,backupThread](ThreadInfo info){
+        threadMap.insert(info.taskID,backupThread);
         // 设置monitor界面
        // 这里是否做映射，有待考虑
        if (ingRow >= ui->ingTable->rowCount()) {
@@ -379,7 +382,8 @@ void MainWindow::handleBackup(BackupOptions backupOptions)
         ingRow++;
    });
 
-    connect(backupThread,&BackupThread::finishedSignal,this,[&](ThreadInfo info){
+    connect(backupThread,&BackupThread::finishedSignal,this,[this,backupThread](ThreadInfo info){
+        threadMap.remove(info.taskID);
         for (int row = 0; row < ui->ingTable->rowCount(); ++row) {
                 if (ui->ingTable->item(row, 0)->text() == QString::number(info.taskID) ) {
                     ui->ingTable->removeRow(row);
@@ -501,13 +505,17 @@ void MainWindow::enableRestoreBtn()
     });
 }
 
-void MainWindow::setRowData(int row, const QString &data)
+void MainWindow::enableThreadStopBtn()
 {
-    if (row >= ui->ingTable->rowCount()) {
-        ui->ingTable->setRowCount(row + 1);
-    }
-    for (int col = 0; col < data.size(); ++col) {
-            QTableWidgetItem *item = new QTableWidgetItem(data);
-            ui->ingTable->setItem(row, col, item);
+    connect(ui->threadStopBtn,&QPushButton::clicked,this,[this](){
+        QTableWidgetItem* selectedItem = ui->ingTable->currentItem();
+        if (selectedItem) {
+            uint taskId = ui->ingTable->item(selectedItem->row(),0)->text().toUInt();
+            BackupThread* associatedThread = threadMap.value(taskId, nullptr);
+            associatedThread->setShouldExit(true);
+        }else{
+            QMessageBox::critical(this,"warning","未选中任何正在执行的任务！");
         }
+    });
 }
+
