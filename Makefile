@@ -1,17 +1,28 @@
-.PHONY: clean test configure build install_cli uninstall hdfs
+.PHONY: clean test configure build install_cli uninstall hdfs local_deploy format local_deploy light_deploy
 
 configure:
-	sudo apt install ceph librados2 librados-dev -y
-	sudo apt install libssl3 libssl-dev -y
-	git submodule update --init --recursive
-	chmod a+x ./scripts/test.sh
-	chmod a+x ./scripts/build.sh
+	chmod u+x scripts/*.sh
+	./scripts/configure.sh
+	./scripts/install_rocksdb.sh
+	./scripts/install_grpc.sh
 
 build:
 	./scripts/build.sh
 
+docker_build: build
+	./scripts/docker_build.sh
+
+local_deploy: build
+	bash ./scripts/deploy_local.sh
+
+light_deploy: build
+	bash ./scripts/light_deploy.sh
+
 uninstall:
 	rm -rf /usr/local/bin/zpods.cli
+
+format:
+	@clang-format -i -style=file $(shell find ZpodsLib network \( -name "*.h" -o -name "*.cpp" \) -size -100k)
 
 install_cli: build uninstall
 	@# if there is no /usr/local/bin/zpods.cli, then create a symbol link

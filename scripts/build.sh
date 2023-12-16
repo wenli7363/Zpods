@@ -2,6 +2,7 @@
 
 mkdir -p build
 cd build
-cmake ..
-make
+cmake -G Ninja ..
+cp compile_commands.json ../
+ninja
 cd ..

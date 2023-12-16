@@ -7,9 +7,11 @@
 
 #include "spdlog/spdlog.h"
 
+#include <filesystem>
 #include <unordered_set>
 #include <type_traits>
 #include <cstdint>
+#include <utility>
 #include <string>
 #include <vector>
 #include <ranges>
@@ -34,7 +36,9 @@ namespace zpods {
         USER_ALREADY_EXISTS,
         USER_NOT_EXISTS,
         WRONG_PASSWORD,
+        NOT_FOUND,
         EMPTY,
+        NO_NEW_TO_ARCHIVE,
     };
 
 //    enum class FileType : std::uint8_t {
@@ -84,28 +88,32 @@ namespace zpods {
 #define let_ref const auto&
 #define let_mut auto
 #define let_mut_ref auto&
+#define CHECK_STATUS(status) \
+    if (status != zpods::Status::OK) { \
+        return status; \
+    }
 
 namespace zpods {
 
-    template<typename T>
-    using ref = const std::remove_cvref_t<T> &;
+//    template<typename T>
+//    using ref = const std::remove_cvref_t<T> &;
+//
+//    template<typename T>
+//    using ref_mut = std::remove_cvref_t<T> &;
 
-    template<typename T>
-    using ref_mut = std::remove_cvref_t<T> &;
+//    static_assert(std::is_same_v<ref<int>, const int &>);
+//    static_assert(std::is_same_v<ref<int &>, const int &>);
+//    static_assert(std::is_same_v<ref<int &&>, const int &>);
+//    static_assert(std::is_same_v<ref<const int>, const int &>);
+//    static_assert(std::is_same_v<ref<const int &>, const int &>);
+//    static_assert(std::is_same_v<ref<const int &&>, const int &>);
 
-    static_assert(std::is_same_v<ref<int>, const int &>);
-    static_assert(std::is_same_v<ref<int &>, const int &>);
-    static_assert(std::is_same_v<ref<int &&>, const int &>);
-    static_assert(std::is_same_v<ref<const int>, const int &>);
-    static_assert(std::is_same_v<ref<const int &>, const int &>);
-    static_assert(std::is_same_v<ref<const int &&>, const int &>);
-
-    static_assert(std::is_same_v<ref_mut<int>, int &>);
-    static_assert(std::is_same_v<ref_mut<int &>, int &>);
-    static_assert(std::is_same_v<ref_mut<int &&>, int &>);
-    static_assert(std::is_same_v<ref_mut<const int>, int &>);
-    static_assert(std::is_same_v<ref_mut<const int &>, int &>);
-    static_assert(std::is_same_v<ref_mut<const int &&>, int &>);
+//    static_assert(std::is_same_v<ref_mut<int>, int &>);
+//    static_assert(std::is_same_v<ref_mut<int &>, int &>);
+//    static_assert(std::is_same_v<ref_mut<int &&>, int &>);
+//    static_assert(std::is_same_v<ref_mut<const int>, int &>);
+//    static_assert(std::is_same_v<ref_mut<const int &>, int &>);
+//    static_assert(std::is_same_v<ref_mut<const int &&>, int &>);
 
     using byte = unsigned char;
     using p_cbyte = const byte *;
