@@ -21,8 +21,11 @@ void BackupThread::setBackupParameters(BackupOptions backupOptions)
 
 void BackupThread::run()
 {
+        // 发送线程信息，交给monitor
         ThreadInfo Info = this->setThreadInfo();
         emit startedSignal(Info);
+
+
         // 执行备份任务的实现
         do{
             if(backupOptions.synChk)
@@ -46,7 +49,6 @@ void BackupThread::run()
             {
                 std::this_thread::sleep_for(std::chrono::seconds(backupOptions.interval));
             }
-            qDebug()<<"thread exe";
         }while(backupOptions.interval>0 && !shouldExit.load());
 
         emit finishedSignal(Info);
@@ -56,7 +58,7 @@ ThreadInfo BackupThread::setThreadInfo()
 {
     ThreadInfo Info;
     Info.taskID = qHash(QThread::currentThreadId()) % 1007;
-    Info.filename = QString::fromStdString(backupOptions.config.backup_filename.value_or(""));
+    // Info.filename = QString::fromStdString(backupOptions.config.backup_filename.value_or(""));
     Info.cmps = backupOptions.cmpsChk ? "√" : "";
     Info.syn = backupOptions.synChk ? "√" : "";
     Info.encrypt = backupOptions.encryptChk ? "√" : "";

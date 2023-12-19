@@ -16,26 +16,15 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
 
 set(PROJECT_SOURCES
         main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
-        periodicwidget.h
-        periodicwidget.cpp
-        periodicwidget.ui
-        logindialog.h
-        logindialog.cpp
-        logindialog.ui
-        filefilterdialog.h
-        filefilterdialog.cpp
-        filefilterdialog.ui
-        dateselector.h
-        dateselector.cpp
-        multiselectcombobox.h
-        multiselectcombobox.cpp
-        myfiledialog.h
-        myfiledialog.cpp
-        backupthread.h
-        backupthread.cpp
+        mainwindow.cpp mainwindow.h  mainwindow.ui
+        periodicwidget.h periodicwidget.cpp periodicwidget.ui
+        logindialog.h logindialog.cpp logindialog.ui
+        filefilterdialog.h  filefilterdialog.cpp  filefilterdialog.ui
+        dateselector.h dateselector.cpp
+        multiselectcombobox.h multiselectcombobox.cpp
+        myfiledialog.h myfiledialog.cpp
+        backupthread.h backupthread.cpp
+        daemonthread.h daemonthread.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -61,7 +50,9 @@ else()
     endif()
 endif()
 
-target_link_libraries(gui PRIVATE zpods_lib spdlog Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(gui PRIVATE zpods_lib spdlog Qt${QT_VERSION_MAJOR}::Widgets
+        zpods_grpc_client
+    )
 target_precompile_headers(${PROJECT_NAME} PRIVATE ${PCH_PATH})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/ZpodsLib/src)
 

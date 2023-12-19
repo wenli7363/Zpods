@@ -5,7 +5,7 @@
 #ifndef ZPODS_NETWORK_H
 #define ZPODS_NETWORK_H
 
-#include "fs.h"
+#include "ZpodsLib/src/base/fs.h"
 #include "httplib.h"
 #include "json.h"
 #include "pch.h"

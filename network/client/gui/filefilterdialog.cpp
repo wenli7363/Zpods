@@ -54,7 +54,7 @@ FileFilterDialog::~FileFilterDialog()
 
 void FileFilterDialog::connectInit()
 {
-    connect(ui->sizeChkBox, &QCheckBox::stateChanged, this, [=](){
+    connect(ui->sizeChkBox, &QCheckBox::stateChanged, this, [this](){
         bool sizeChecked = ui->sizeChkBox->isChecked();
         if(sizeChecked){
             sizeChk = true;
@@ -71,7 +71,7 @@ void FileFilterDialog::connectInit()
         }
     });
 
-    connect(ui->dateChkBox, &QCheckBox::stateChanged, this, [=](){
+    connect(ui->dateChkBox, &QCheckBox::stateChanged, this, [this](){
         bool dateChecked = ui->dateChkBox->isChecked();
         if(dateChecked){
             dateChk = true;
@@ -84,7 +84,7 @@ void FileFilterDialog::connectInit()
         }
     });
 
-    connect(ui->reChkBox, &QCheckBox::stateChanged, this, [=](){
+    connect(ui->reChkBox, &QCheckBox::stateChanged, this, [this](){
         bool reChecked = ui->reChkBox->isChecked();
         if(reChecked){
             reTmpList.clear();
@@ -98,7 +98,7 @@ void FileFilterDialog::connectInit()
         }
     });
 
-    connect(ui->typeChkBox, &QCheckBox::stateChanged, this, [=](){
+    connect(ui->typeChkBox, &QCheckBox::stateChanged, this, [this](){
         bool typeChecked = ui->typeChkBox->isChecked();
         if(typeChecked){
             typeChk = true;
@@ -109,7 +109,7 @@ void FileFilterDialog::connectInit()
         }
     });
 
-    connect(ui->rePushButton,&QPushButton::clicked,this,[=]()
+    connect(ui->rePushButton,&QPushButton::clicked,this,[this]()
     {
         QString reInput = ui->reLineEdit->text();
         if(!reInput.isEmpty())

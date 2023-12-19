@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>564</width>
-    <height>549</height>
+    <width>581</width>
+    <height>545</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="backupTab">
        <attribute name="title">
@@ -27,7 +27,7 @@
        <widget class="QWidget" name="widget_4" native="true">
         <property name="geometry">
          <rect>
-          <x>30</x>
+          <x>40</x>
           <y>330</y>
           <width>461</width>
           <height>41</height>
@@ -58,7 +58,7 @@
          <item>
           <widget class="QCheckBox" name="remoteChkBox">
            <property name="text">
-            <string>远程上传</string>
+            <string>远程（选中视为已登录）</string>
            </property>
           </widget>
          </item>
@@ -101,82 +101,98 @@
          <string>Zpods！启动！</string>
         </property>
        </widget>
-       <widget class="QWidget" name="widget_3" native="true">
+       <widget class="QStackedWidget" name="stackedWidget">
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>20</y>
-          <width>511</width>
-          <height>291</height>
+          <y>10</y>
+          <width>541</width>
+          <height>301</height>
          </rect>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
-          <widget class="QWidget" name="widget" native="true">
-           <layout class="QHBoxLayout" name="horizontalLayout">
-            <item>
-             <widget class="QLabel" name="srcLabel">
-              <property name="text">
-               <string>源路径</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QListWidget" name="srcListWidget">
-              <property name="selectionMode">
-               <enum>QAbstractItemView::NoSelection</enum>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <layout class="QVBoxLayout" name="verticalLayout_4">
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <widget class="QWidget" name="page_3">
+         <widget class="QWidget" name="widget_3" native="true">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>511</width>
+            <height>291</height>
+           </rect>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout">
+           <item>
+            <widget class="QWidget" name="widget" native="true">
+             <layout class="QHBoxLayout" name="horizontalLayout">
               <item>
-               <widget class="QPushButton" name="srcBtn">
+               <widget class="QLabel" name="srcLabel">
+                <property name="text">
+                 <string>源路径</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QListWidget" name="srcListWidget">
+                <property name="selectionMode">
+                 <enum>QAbstractItemView::NoSelection</enum>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QVBoxLayout" name="verticalLayout_4">
+                <item>
+                 <widget class="QPushButton" name="srcBtn">
+                  <property name="text">
+                   <string>选择</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="deleteBtn">
+                  <property name="text">
+                   <string>删除</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QWidget" name="widget_2" native="true">
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <item>
+               <widget class="QLabel" name="targetLabel">
+                <property name="text">
+                 <string>目标路径</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="targetPath">
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="targetBtn">
                 <property name="text">
                  <string>选择</string>
                 </property>
                </widget>
               </item>
-              <item>
-               <widget class="QPushButton" name="deleteBtn">
-                <property name="text">
-                 <string>删除</string>
-                </property>
-               </widget>
-              </item>
              </layout>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item>
-          <widget class="QWidget" name="widget_2" native="true">
-           <layout class="QHBoxLayout" name="horizontalLayout_2">
-            <item>
-             <widget class="QLabel" name="targetLabel">
-              <property name="text">
-               <string>目标路径</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="targetPath">
-              <property name="readOnly">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="targetBtn">
-              <property name="text">
-               <string>选择</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-        </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+        <widget class="QWidget" name="page_4"/>
        </widget>
       </widget>
       <widget class="QWidget" name="restoreTab">

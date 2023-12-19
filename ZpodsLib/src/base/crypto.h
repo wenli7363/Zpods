@@ -5,7 +5,7 @@
 #ifndef ZPODS_CRYPTO_H
 #define ZPODS_CRYPTO_H
 
-#include "config.h"
+#include "ZpodsLib/src/core/config.h"
 #include "pch.h"
 #include <openssl/evp.h>
 #include <openssl/types.h>

@@ -2,7 +2,7 @@
 #define FILEFILTERDIALOG_H
 
 #include <QDialog>
-#include "fs.h"
+#include "ZpodsLib/src/base/fs.h"
 #include <map>
 #include <QMessageBox>
 

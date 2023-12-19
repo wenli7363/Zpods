@@ -2,10 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "./ui_mainwindow.h"
+#include "ui_mainwindow.h"
 #include "backupthread.h"
 
-#include <network.h>
+#include "daemonthread.h"
 
 #include <QPushButton>
 #include <QFileDialog>
@@ -50,6 +50,7 @@ public:
     void handleRegist();
     void handleBackup(BackupOptions backupOptions);
     void handleRestore(std::string src, std::string target, QString psw);
+    void handleLoginFailed();
     void enableStartBtn();
 
     void enableRSrcBtn();
@@ -62,12 +63,12 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    LoginDialog* loginDialog;
+    LoginDialog* loginDialog;              // 只有一个对话框，一次登录一个用户
     std::shared_ptr<FilterConfig> filterConfig;
+    DaemonThread* daemonThread;  // 一次只有一个用户，也只有一个daemon
 
     BackupOptions backupOptions;    // mainWindow Options
     QSet<QString> srcSet;
-    zpods::User user;
 
 //   QMap<QThread*, QListWidgetItem*> threadItemMap;
     QMap<uint, BackupThread*> threadMap;

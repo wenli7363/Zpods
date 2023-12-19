@@ -13,11 +13,14 @@ MainWindow::MainWindow(QWidget *parent)
     this->loginDialog = new LoginDialog(this);
     this->loginDialog->hide();
 
+    this->daemonThread = new DaemonThread();
+
     this->filterConfig = nullptr;
     backupOptions = BackupOptions();
 
     ui->srcListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
+    // ======================================   monitor绘制  ============================
     QStringList headerLabels;
     headerLabels <<"任务号"<<"保存的文件名"<<"压缩"<<"加密"<<"同步"<<"远程"<<"周期(s)";
     ui->ingTable->setRowCount(6);
@@ -48,12 +51,14 @@ MainWindow::MainWindow(QWidget *parent)
         ui->edTable->horizontalHeader()->resizeSection(i,width2);
     }
 
+ // =================================================================================
 
 
     ingRow = edRow = 0;
 
     qRegisterMetaType<ThreadInfo>("ThreadInfo");
-    // set the connect function of two chkBox
+
+    // connect function for all checkbox
     connectInit();
 }
 
@@ -71,7 +76,7 @@ void MainWindow::enableFileFilter()
             backupOptions.filterChk = true;
 
             FileFilterDialog* filterDialog = new FileFilterDialog(this);
-            connect(filterDialog,&FileFilterDialog::sentFilterConfig,this,[=](std::shared_ptr<FilterConfig> filterconfig){
+            connect(filterDialog,&FileFilterDialog::sentFilterConfig,this,[this](std::shared_ptr<FilterConfig> filterconfig){
                 Q_ASSERT(filterconfig != nullptr);
                 this->filterConfig = filterconfig;
 
@@ -97,24 +102,36 @@ void MainWindow::enableRemote()
     // enable Remote when clicked remoteCheckBox
     connect(ui->remoteChkBox, &QCheckBox::stateChanged, this, [&](){
         bool remoteChecked = ui->remoteChkBox->isChecked();
-        if(remoteChecked && (!loginDialog->logined)){
+        if(remoteChecked){
            backupOptions.remoteChk = true;
-           loginDialog->clearPasswordLineEdit();
+           loginDialog->loginDialogReset();
            loginDialog->show();
            loginDialog->exec();
 //           loginDialog->logined = true;
         }else{
+
+            // uncheck状态 = 未登录/退出已登录
             backupOptions.remoteChk = false;
+
+            // 若已登录再退出，停止daemon
+            if(daemonThread->isRunning()){
+                daemonThread->terminate();
+                daemonThread->wait();
+
+                 // 把实例清空
+                delete daemonThread;
+                this->daemonThread =new DaemonThread();
+            }
+
 //            ui->remoteChkBox->setCheckState(Qt::Unchecked);
         }
-//        qDebug()<<"remoteChkBox: " <<remoteChk;
     });
 }
 
 
 void MainWindow::enableSrcBtn()
 {
-    connect(ui->srcBtn, &QPushButton::clicked, this, [=](){
+    connect(ui->srcBtn, &QPushButton::clicked, this, [this](){
         MyFileDialog *dialog =new MyFileDialog(this);
         dialog->setDirectory(QDir::homePath());
         dialog->setOption(QFileDialog::DontUseNativeDialog,true);
@@ -248,7 +265,7 @@ void MainWindow::connectInit()
     enableEncryptChkBox();
     enableSynChkBox();
     enablePeriodBox();
-    handleRegist();
+    handleLoginFailed();
     enableStartBtn();
     enableThreadStopBtn();
 
@@ -257,25 +274,9 @@ void MainWindow::connectInit()
     enableRestoreBtn();
 }
 
-void MainWindow::handleRegist()
-{
-    connect(this->loginDialog, &LoginDialog::sentRegist,this,[&](std::string username, std::string psw){
-        user.username = username;
-        user.password = psw;
-
-        let status = user.register_();
-                if (status == zpods::Status::USER_ALREADY_EXISTS) {
-                    spdlog::info("user already exists!");
-                } else if (status == zpods::Status::OK) {
-                    spdlog::info("register succeeded!");
-                } else {
-                    spdlog::info("register failed!");
-                }
-    });
-}
-
 void MainWindow::handleBackup(BackupOptions backupOptions)
 {
+    // 获取src列表
     for (int i = 0; i < ui->srcListWidget->count(); ++i)
     {
         QListWidgetItem *item = ui->srcListWidget->item(i);
@@ -283,7 +284,7 @@ void MainWindow::handleBackup(BackupOptions backupOptions)
         backupOptions.src_path_list.push_back(text.toStdString());
     }
 
-    // config paths
+   // 保存这次备份的所有选项
    if (backupOptions.src_path_list.empty()) {
        QMessageBox::critical(this, "提示", "请选择要备份的文件！");
        spdlog::error("src path list is empty!");
@@ -297,18 +298,17 @@ void MainWindow::handleBackup(BackupOptions backupOptions)
     }
 
 // 是否指定文件名
-    QString backupName = QInputDialog::getText(this, "请输入打包文件名", "请输入打包文件名:");
-    if(backupName.isEmpty())
-    {
-        QMessageBox::critical(this, "提示", "请输入打包后的文件名！");
-        return;
-    }
-    backupName +=PODS_FILE_SUFFIX;
-    backupOptions.config.backup_filename = backupName.toStdString();
+//    QString backupName = QInputDialog::getText(this, "请输入打包文件名", "请输入打包文件名:");
+//    if(backupName.isEmpty())
+//    {
+//        QMessageBox::critical(this, "提示", "请输入打包后的文件名！");
+//        return;
+//    }
+//    backupName +=PODS_FILE_SUFFIX;
+//    backupOptions.config.backup_filename = backupName.toStdString();
+//    backupOptions.config.filter.paths = std::vector<zpods::fs::zpath>(backupOptions.src_path_list.begin(), backupOptions.src_path_list.end());
 
-    backupOptions.config.filter.paths = std::vector<zpods::fs::zpath>(backupOptions.src_path_list.begin(), backupOptions.src_path_list.end());
-
-    // if use the file filter
+    // 保存过滤器信息
     if(backupOptions.filterChk)
     {
         // 把filterconfig一个个复制到对应变量中
@@ -338,18 +338,25 @@ void MainWindow::handleBackup(BackupOptions backupOptions)
         backupOptions.config.crypto_config = zpods::CryptoConfig(backupOptions.password);
     }
 
+    // 如果同时启用了remote+sync，开启daemon进行同步
+   if(backupOptions.remoteChk && backupOptions.synChk)
+   {
+            daemonThread->setUser(&loginDialog->user);
+            this->daemonThread->start();
+   }
+
     // create Thread here
     BackupThread *backupThread = new BackupThread(this);
-    backupThread->setBackupParameters(backupOptions);
+    backupThread->setBackupParameters(backupOptions);           // 将backupoption传给线程
 
-    this->backupOptions = BackupOptions();
+    this->backupOptions = BackupOptions();      // 将backupOption清空，供下次使用
 
     ui->srcListWidget->clear();
     ui->targetPath->clear();
     ui->filterChkBox->setCheckState(Qt::Unchecked);
     ui->cmpsChkBox->setCheckState(Qt::Unchecked);
     ui->encryptChkBox->setCheckState(Qt::Unchecked);
-    ui->remoteChkBox->setCheckState(Qt::Unchecked);
+//    ui->remoteChkBox->setCheckState(Qt::Unchecked);       // 保持登录状态
     ui->synChkBox->setCheckState(Qt::Unchecked);
     ui->periodicWidget->setUnchecked();
     srcSet.clear();
@@ -497,7 +504,7 @@ void MainWindow::enableRTargetBtn()
 
 void MainWindow::enableRestoreBtn()
 {
-    connect(ui->restoreBtn,&QPushButton::clicked,this,[=](){
+    connect(ui->restoreBtn,&QPushButton::clicked,this,[this](){
         QString targetPath = ui->rTargetPath->text();
         QString srcPath = ui->rSrcPath->text();
         QString psw = ui->rPswLineEdit->text();
@@ -516,6 +523,14 @@ void MainWindow::enableThreadStopBtn()
         }else{
             QMessageBox::critical(this,"warning","未选中任何正在执行的任务！");
         }
+    });
+}
+
+void MainWindow::handleLoginFailed()
+{
+    connect(loginDialog, &LoginDialog::sentLoginFailed, this, [&]()
+    {
+        ui->remoteChkBox->setCheckState(Qt::Unchecked);
     });
 }
 

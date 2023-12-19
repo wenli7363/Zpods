@@ -6,6 +6,8 @@
 #include <QDialog>
 #include <termios.h>
 #include <QString>
+#include "../grpc_client.h"
+//#include "ZpodsLib/src/zpods_lib.h"
 
 
 namespace Ui {
@@ -17,12 +19,13 @@ class LoginDialog : public QDialog
     Q_OBJECT
 
 public:
+    zpods::RpcUser user;
     bool logined;
 
     explicit LoginDialog(QWidget *parent = nullptr);
     ~LoginDialog();
 
-    void clearPasswordLineEdit();
+    void loginDialogReset();
 
     std::string get_password();
     std::string get_username();
@@ -37,8 +40,11 @@ public:
     void connectRegBtn2();
     void connectReturnBtn();
 
+protected:
+    void closeEvent(QCloseEvent *event) ;
+
 signals:
-    void sentRegist(std::string username, std::string psw);
+    void sentLoginFailed();
 
 private:
     Ui::LoginDialog *ui;

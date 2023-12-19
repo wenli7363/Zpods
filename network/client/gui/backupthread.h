@@ -9,7 +9,7 @@
 #include "periodicwidget.h"
 #include "zpods_lib.h"
 #include "termios.h"
-#include "fs.h"
+#include "ZpodsLib/src/base/fs.h"
 
 #include <QThread>
 #include <QString>

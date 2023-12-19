@@ -15,14 +15,14 @@ DateSelector::DateSelector(QWidget *parent) : QWidget(parent) {
     calendarWidget->setSelectedDate(QDate::currentDate());
     calendarWidget->setDateEditEnabled(true);
 
-    connect(selectButton, &QPushButton::clicked, this, [=](){
+    connect(selectButton, &QPushButton::clicked, this, [this](){
         QPoint pos = selectButton->mapToGlobal(QPoint(0, selectButton->height()));
         calendarWidget->move(pos);
         calendarWidget->show();
     });
 
 
-    connect(calendarWidget, &QCalendarWidget::selectionChanged, this, [=](){
+    connect(calendarWidget, &QCalendarWidget::selectionChanged, this, [this](){
         QDate selectedDate = calendarWidget->selectedDate();
         dateLineEdit->setText(selectedDate.toString("yyyy-MM-dd"));
         calendarWidget->hide();

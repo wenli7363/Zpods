@@ -23,8 +23,10 @@ LoginDialog::~LoginDialog()
     delete ui;
 }
 
-void LoginDialog::clearPasswordLineEdit() {
+void LoginDialog::loginDialogReset() {
     ui->pswLineEdit->clear();
+    logined = false;
+    user = {};
 }
 
 std::string LoginDialog::get_username() {
@@ -59,8 +61,16 @@ void LoginDialog::connectLoginBtn()
 {
     connect(ui->loginBtn, &QPushButton::clicked,[&]()
     {
-        qDebug()<<"usrname:"<<QString::fromStdString(get_username());
-        qDebug()<<"psw: "<<QString::fromStdString(get_password());
+        user.username = get_username();
+        user.password = get_password();
+        if(zpods::Status::OK == user.login())
+        {
+            logined = true;
+            QMessageBox::information(this,"登录成功","登录成功");
+        }else{
+            QMessageBox::critical(this,"错误","登录失败，请联系管理员");
+            logined = false;
+        }
     });
 }
 
@@ -85,14 +95,17 @@ void LoginDialog::connectRegBtn2()
          // 避免了用户输入为空时，注册了一个空用户
          if(userName == "" || psw == "")
          {
+//            QMessageBox::critical(this,"提示","用户名和密码不能为空");
             return;
          }
 
          if(psw == psw2)
          {
-//             qDebug()<<"usr: " << QString::fromStdString(userName)<<" psw: "<< QString::fromStdString(psw);
-            // 注册逻辑
-            emit sentRegist(userName,psw);
+            // register directly
+             user.username = userName;
+             user.password = psw;
+             user.password = psw2;
+             user.register_();
          }else{
             QMessageBox::critical(this, "提示", "两次输入密码不同，请重新输入！");
             ui->pswRegLine->clear();
@@ -151,4 +164,14 @@ std::string LoginDialog::get_Rpassword2()
        {
            return psw.toStdString();
        }
+}
+
+void LoginDialog::closeEvent(QCloseEvent *event)
+{
+    if(!this->logined)
+    {
+        emit sentLoginFailed();
+    }
+
+    QDialog::closeEvent(event);
 }
