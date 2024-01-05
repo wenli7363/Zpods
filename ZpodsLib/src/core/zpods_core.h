@@ -5,9 +5,9 @@
 #ifndef ZPODS_ZPODS_CORE_H
 #define ZPODS_ZPODS_CORE_H
 
-#include "compress.h"
+#include "ZpodsLib/src/base/compress.h"
 #include "config.h"
-#include "crypto.h"
+#include "ZpodsLib/src/base/crypto.h"
 #include "pch.h"
 
 namespace zpods
