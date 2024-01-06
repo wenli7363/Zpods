@@ -58,6 +58,8 @@ public:
     void enableRestoreBtn();
     void enableThreadStopBtn();
 
+    void handleBackuptest(BackupOptions bpOptions);
+
     // 功能函数
     void regist();
 

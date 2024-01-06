@@ -27,6 +27,11 @@ void BackupThread::run()
 
         do
         {
+            if(backupOptions.remoteChk)
+            {
+                break;
+            }
+
             for (const auto& item : backupOptions.src_path_list)
             {
                     backupOptions.config.tree_dir = item;
@@ -38,27 +43,13 @@ void BackupThread::run()
                     {
                             zpods::backup(backupOptions.target_dir.c_str(), backupOptions.config);
                     }
-                    let backup_file_path = backupOptions.config.current_pod_path.parent_path();
-
-//                    if (backupOptions.remoteChk)
-//                    {
-//                            let status = backupOptions.user.upload_pods(backup_file_path.c_str());
-//                            if (status == zpods::Status::OK)
-//                            {
-//                                spdlog::info("upload successfully!");
-//                            }
-//                            else
-//                            {
-//                                spdlog::info("fail to upload");
-//                            }
-//                    }
                 }
 
                 if(backupOptions.periodChk)
                 {
                         std::this_thread::sleep_for(std::chrono::seconds(backupOptions.interval));
                 }
-                }while(backupOptions.interval>0 && !shouldExit.load());
+        }while(backupOptions.interval>0 && !shouldExit.load());
 
         emit finishedSignal(Info);
 }

@@ -24,6 +24,7 @@ LoginDialog::~LoginDialog()
 }
 
 void LoginDialog::loginDialogReset() {
+    ui->stackedWidget->setCurrentWidget(ui->loginPage);
     ui->pswLineEdit->clear();
     logined = false;
     user = {};
@@ -105,7 +106,14 @@ void LoginDialog::connectRegBtn2()
              user.username = userName;
              user.password = psw;
              user.password = psw2;
-             user.register_();
+             auto status = user.register_();
+
+             if(status == zpods::Status::OK)
+             {
+                 QMessageBox::information(this,"成功","注册成功");
+             }else{
+                 QMessageBox::critical(this,"失败","注册失败，详细原因看日志");
+             }
          }else{
             QMessageBox::critical(this, "提示", "两次输入密码不同，请重新输入！");
             ui->pswRegLine->clear();

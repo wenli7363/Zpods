@@ -104,15 +104,25 @@ void MainWindow::enableRemote()
         bool remoteChecked = ui->remoteChkBox->isChecked();
         if(remoteChecked){
            backupOptions.remoteChk = true;
+
            loginDialog->loginDialogReset();
            loginDialog->show();
            loginDialog->exec();
-//           loginDialog->logined = true;
-        }else{
 
+          if(loginDialog->logined){
+                ui->targetLabel->setText("远程服务器IP：端口号");
+                ui->targetPath->setEnabled(false);
+                ui->targetPath->setText("47.108.88.125:50051");
+                ui->encryptChkBox->setEnabled(false);
+          }
+
+        }else{
             // uncheck状态 = 未登录/退出已登录
             backupOptions.remoteChk = false;
-
+            ui->targetLabel->setText("目标路径");
+            ui->targetPath->clear();
+            ui->targetPath->setEnabled(true);
+            ui->encryptChkBox->setEnabled(true);
             // 若已登录再退出，停止daemon
 //            if(daemonThread->isRunning()){
 //                daemonThread->terminate();
@@ -274,6 +284,113 @@ void MainWindow::connectInit()
     enableRestoreBtn();
 }
 
+// ==============================================================================================
+void MainWindow::handleBackuptest(BackupOptions bpOptions)
+{
+    // 获取src列表
+    for (int i = 0; i < ui->srcListWidget->count(); ++i)
+    {
+        QListWidgetItem *item = ui->srcListWidget->item(i);
+        QString text = item->text();
+        bpOptions.src_path_list.push_back(text.toStdString());
+    }
+
+   // 保存这次备份的所有选项
+   if (bpOptions.src_path_list.empty()) {
+       QMessageBox::critical(this, "提示", "请选择要备份的文件！");
+       spdlog::error("src path list is empty!");
+       return;
+    }
+
+   if(!bpOptions.remoteChk && backupOptions.target_dir.empty() ){
+       QMessageBox::critical(this,"提示","请选择要保存的路径");
+       spdlog::error("target dir is empty!");
+       return;
+    }
+
+    // 保存过滤器信息
+    if(backupOptions.filterChk)
+    {
+        // 把filterconfig一个个复制到对应变量中
+        bpOptions.config.filter.min_date = filterConfig->min_date;
+        bpOptions.config.filter.max_date = filterConfig->max_date;
+        bpOptions.config.filter.min_size = filterConfig->minSize;
+        bpOptions.config.filter.max_size = filterConfig->maxSize;
+        bpOptions.config.filter.types = filterConfig->types;
+        bpOptions.config.filter.re_list = filterConfig->re_list;
+    }
+
+    if(backupOptions.periodChk){
+        bpOptions.interval = ui->periodicWidget->getValue();
+    }else{
+        bpOptions.interval = -1;
+    }
+
+    if(backupOptions.cmpsChk)
+    {
+        bpOptions.config.compress = true;
+    }else{
+        bpOptions.config.compress = false;
+    }
+
+    if(backupOptions.encryptChk)
+    {
+        bpOptions.config.crypto_config = zpods::CryptoConfig(backupOptions.password);
+    }
+
+    // execute the backup task
+    do
+    {
+        if (bpOptions.target_dir.empty())
+        {
+            bpOptions.target_dir = ZPODS_HOME_PATH;
+        }
+
+        for (const auto& item : bpOptions.src_path_list)
+        {
+            bpOptions.config.tree_dir = item;
+            if (bpOptions.synChk)
+            {
+                zpods::sync_backup(bpOptions.target_dir.c_str(), bpOptions.config);
+            }
+            else
+            {
+                zpods::backup(bpOptions.target_dir.c_str(), bpOptions.config);
+            }
+            let backup_file_path = bpOptions.config.current_pod_path.parent_path();
+
+            if (bpOptions.remoteChk)
+            {
+                let status = loginDialog->user.upload_pods(backup_file_path.c_str());
+                if (status == zpods::Status::OK)
+                {
+                    spdlog::info("upload successfully!");
+                }
+                else
+                {
+                    spdlog::info("fail to upload");
+                }
+            }
+        }
+
+        if (bpOptions.periodChk)
+        {
+            std::this_thread::sleep_for(std::chrono::seconds(bpOptions.interval));
+        }
+    } while (bpOptions.interval > 0); // periodic backup
+
+    ui->srcListWidget->clear();
+    ui->targetPath->clear();
+    ui->filterChkBox->setCheckState(Qt::Unchecked);
+    ui->cmpsChkBox->setCheckState(Qt::Unchecked);
+    ui->encryptChkBox->setCheckState(Qt::Unchecked);
+//    ui->remoteChkBox->setCheckState(Qt::Unchecked);       // 保持登录状态
+    ui->synChkBox->setCheckState(Qt::Unchecked);
+    ui->periodicWidget->setUnchecked();
+    srcSet.clear();
+}
+// ==============================================================================================
+
 void MainWindow::handleBackup(BackupOptions backupOptions)
 {
     // 获取src列表
@@ -291,22 +408,11 @@ void MainWindow::handleBackup(BackupOptions backupOptions)
        return;
     }
 
-   if(backupOptions.target_dir.empty()){
+   if(!backupOptions.remoteChk && backupOptions.target_dir.empty() ){
        QMessageBox::critical(this,"提示","请选择要保存的路径");
        spdlog::error("target dir is empty!");
        return;
     }
-
-// 是否指定文件名
-//    QString backupName = QInputDialog::getText(this, "请输入打包文件名", "请输入打包文件名:");
-//    if(backupName.isEmpty())
-//    {
-//        QMessageBox::critical(this, "提示", "请输入打包后的文件名！");
-//        return;
-//    }
-//    backupName +=PODS_FILE_SUFFIX;
-//    backupOptions.config.backup_filename = backupName.toStdString();
-//    backupOptions.config.filter.paths = std::vector<zpods::fs::zpath>(backupOptions.src_path_list.begin(), backupOptions.src_path_list.end());
 
     // 保存过滤器信息
     if(backupOptions.filterChk)
@@ -338,12 +444,57 @@ void MainWindow::handleBackup(BackupOptions backupOptions)
         backupOptions.config.crypto_config = zpods::CryptoConfig(backupOptions.password);
     }
 
+
     // 如果同时启用了remote+sync，开启daemon进行同步
 //   if(backupOptions.remoteChk && backupOptions.synChk)
 //   {
 //            daemonThread->setUser(&loginDialog->user);
 //            this->daemonThread->start();
 //   }
+
+    if(backupOptions.remoteChk)
+    {
+        do
+            {
+                if (backupOptions.target_dir.empty())
+                {
+                    backupOptions.target_dir = ZPODS_HOME_PATH;
+                }
+
+                for (const auto& item : backupOptions.src_path_list)
+                {
+                    backupOptions.config.tree_dir = item;
+                    if (backupOptions.synChk)
+                    {
+                        zpods::sync_backup(backupOptions.target_dir.c_str(), backupOptions.config);
+                    }
+                    else
+                    {
+                        zpods::backup(backupOptions.target_dir.c_str(), backupOptions.config);
+                    }
+                    let backup_file_path = backupOptions.config.current_pod_path.parent_path();
+
+                    if (backupOptions.remoteChk)
+                    {
+                        let status = loginDialog->user.upload_pods(backup_file_path.c_str());
+                        if (status == zpods::Status::OK)
+                        {
+                            spdlog::info("upload successfully!");
+                        }
+                        else
+                        {
+                            spdlog::info("fail to upload");
+                        }
+                    }
+                }
+
+                if (backupOptions.periodChk)
+                {
+                    std::this_thread::sleep_for(std::chrono::seconds(backupOptions.interval));
+                }
+            } while (backupOptions.interval > 0); // periodic backup
+    }
+
 
     // create Thread here
     BackupThread *backupThread = new BackupThread(this);
@@ -367,8 +518,8 @@ void MainWindow::handleBackup(BackupOptions backupOptions)
     // monitor thread
    connect(backupThread, &BackupThread::startedSignal,this,[this,backupThread](ThreadInfo info){
         threadMap.insert(info.taskID,backupThread);
+
         // 设置monitor界面
-       // 这里是否做映射，有待考虑
        if (ingRow >= ui->ingTable->rowCount()) {
            ui->ingTable->setRowCount(ingRow + 1);
        }
@@ -390,6 +541,8 @@ void MainWindow::handleBackup(BackupOptions backupOptions)
    });
 
     connect(backupThread,&BackupThread::finishedSignal,this,[this,backupThread](ThreadInfo info){
+        QString message = QStringLiteral("%1备份成功").arg(info.taskID);
+        QMessageBox::information(this,"结束任务提示",message);
         threadMap.remove(info.taskID);
         for (int row = 0; row < ui->ingTable->rowCount(); ++row) {
                 if (ui->ingTable->item(row, 0)->text() == QString::number(info.taskID) ) {
@@ -469,7 +622,6 @@ void MainWindow::handleRestore(std::string src, std::string target, QString psw)
 void MainWindow::enableStartBtn()
 {
     connect(ui->startBtn, &QPushButton::clicked,this,[&](){
-       // 另起一个thread
        handleBackup(backupOptions);
     });
 }
@@ -486,7 +638,6 @@ void MainWindow::enableRSrcBtn()
             ui->rSrcPath->setText(fileName);
         }
     });
-
 }
 
 void MainWindow::enableRTargetBtn()
