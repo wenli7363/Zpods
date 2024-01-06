@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent)
     this->loginDialog = new LoginDialog(this);
     this->loginDialog->hide();
 
-    this->daemonThread = new DaemonThread();
+//    this->daemonThread = new DaemonThread();
 
     this->filterConfig = nullptr;
     backupOptions = BackupOptions();
@@ -114,14 +114,14 @@ void MainWindow::enableRemote()
             backupOptions.remoteChk = false;
 
             // 若已登录再退出，停止daemon
-            if(daemonThread->isRunning()){
-                daemonThread->terminate();
-                daemonThread->wait();
+//            if(daemonThread->isRunning()){
+//                daemonThread->terminate();
+//                daemonThread->wait();
 
-                 // 把实例清空
-                delete daemonThread;
-                this->daemonThread =new DaemonThread();
-            }
+//                 // 把实例清空
+//                delete daemonThread;
+//                this->daemonThread =new DaemonThread();
+//            }
 
 //            ui->remoteChkBox->setCheckState(Qt::Unchecked);
         }
@@ -339,11 +339,11 @@ void MainWindow::handleBackup(BackupOptions backupOptions)
     }
 
     // 如果同时启用了remote+sync，开启daemon进行同步
-   if(backupOptions.remoteChk && backupOptions.synChk)
-   {
-            daemonThread->setUser(&loginDialog->user);
-            this->daemonThread->start();
-   }
+//   if(backupOptions.remoteChk && backupOptions.synChk)
+//   {
+//            daemonThread->setUser(&loginDialog->user);
+//            this->daemonThread->start();
+//   }
 
     // create Thread here
     BackupThread *backupThread = new BackupThread(this);
@@ -477,10 +477,9 @@ void MainWindow::enableStartBtn()
 void MainWindow::enableRSrcBtn()
 {
     connect(ui->rSrcBtn, &QPushButton::clicked,this,[&](){
-        QString fileName = QFileDialog::getOpenFileName(this,
+        QString fileName = QFileDialog::getExistingDirectory(this,
         "Open File",
-        QDir::homePath(),
-        "Zpods Files (*.pods);;All Files (*)");
+        QDir::homePath());
 
         // 如果用户选择了文件，显示文件名
         if (!fileName.isEmpty()) {

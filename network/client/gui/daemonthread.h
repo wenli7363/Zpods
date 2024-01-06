@@ -2,7 +2,7 @@
 #define DAEMONTHREAD_H
 #include <QThread>
 #include <QDebug>
-#include "ZpodsLib/src/network/network.h"
+//#include "ZpodsLib/src/network/network.h"
 #include "ZpodsLib/src/core/daemon.h"
 #include "../grpc_client.h"
 

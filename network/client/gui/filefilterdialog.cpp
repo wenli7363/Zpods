@@ -202,6 +202,7 @@ void FileFilterDialog::closeEvent(QCloseEvent *event)
             QStringList qTypeTmpList = ui->typeFilterWidget->currentText();
             if(!qTypeTmpList.isEmpty())
             {
+                config->types.clear();
                 auto qTypeList = qTypeTmpList[0].split(";");
                 for (const QString& qType : qTypeList) {
                     FileType fileType = fileTypeMap[qType];
