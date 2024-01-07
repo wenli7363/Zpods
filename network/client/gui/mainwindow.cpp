@@ -114,6 +114,7 @@ void MainWindow::enableRemote()
                 ui->targetPath->setEnabled(false);
                 ui->targetPath->setText("47.108.88.125:50051");
                 ui->encryptChkBox->setEnabled(false);
+                ui->periodicWidget->setEnabled(false);
           }
 
         }else{
@@ -123,6 +124,7 @@ void MainWindow::enableRemote()
             ui->targetPath->clear();
             ui->targetPath->setEnabled(true);
             ui->encryptChkBox->setEnabled(true);
+            ui->periodicWidget->setEnabled(true);
             // 若已登录再退出，停止daemon
 //            if(daemonThread->isRunning()){
 //                daemonThread->terminate();
