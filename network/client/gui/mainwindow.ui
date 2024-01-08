@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="backupTab">
        <attribute name="title">
@@ -398,6 +398,114 @@
         </property>
         <property name="text">
          <string>终止线程</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="downloadTab">
+       <attribute name="title">
+        <string>网盘下载</string>
+       </attribute>
+       <widget class="QPushButton" name="logoutBtn">
+        <property name="geometry">
+         <rect>
+          <x>470</x>
+          <y>450</y>
+          <width>80</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>退出登录</string>
+        </property>
+       </widget>
+       <widget class="QWidget" name="widget_9" native="true">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>10</y>
+          <width>511</width>
+          <height>291</height>
+         </rect>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QWidget" name="widget_10" native="true">
+           <layout class="QHBoxLayout" name="horizontalLayout_8">
+            <item>
+             <widget class="QLabel" name="srcLabelDL">
+              <property name="text">
+               <string>待 下 载 </string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QListWidget" name="srcListWidgetDL">
+              <property name="selectionMode">
+               <enum>QAbstractItemView::NoSelection</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_6">
+              <item>
+               <widget class="QPushButton" name="listBtn">
+                <property name="text">
+                 <string>选择</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="deleteBtnDL">
+                <property name="text">
+                 <string>删除</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QWidget" name="widget_11" native="true">
+           <layout class="QHBoxLayout" name="horizontalLayout_9">
+            <item>
+             <widget class="QLabel" name="targetLabelDL">
+              <property name="text">
+               <string>保存路径</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="targetPathDL">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="targetBtnDL">
+              <property name="text">
+               <string>选择</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QPushButton" name="downloadBtn">
+        <property name="geometry">
+         <rect>
+          <x>210</x>
+          <y>350</y>
+          <width>111</width>
+          <height>61</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>下载</string>
         </property>
        </widget>
       </widget>

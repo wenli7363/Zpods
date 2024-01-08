@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "ui_mainwindow.h"
 #include "backupthread.h"
+#include "remotefiledialog.h"
 
 //#include "daemonthread.h"
 
@@ -19,6 +20,10 @@
 #include <QListWidgetItem>
 #include <QTableWidget>
 #include <QTableWidgetItem>
+#include <QUrl>
+#include <libssh/libssh.h>
+#include <libssh/sftp.h>
+
 
 
 
@@ -53,15 +58,21 @@ public:
     void handleLoginFailed();
     void enableStartBtn();
 
+
     void enableRSrcBtn();
     void enableRTargetBtn();
     void enableRestoreBtn();
     void enableThreadStopBtn();
 
-    void handleBackuptest(BackupOptions bpOptions);
-
     // 功能函数
     void regist();
+
+    void enableList();
+    void enableLogoutBtn();
+    void enabledeleteBtnDL();
+    void enableDownloadBtn();
+    void enableTargetBtnDL();
+     QList<QPair<QString,QString>> getRemoteFileList();
 
 private:
     Ui::MainWindow *ui;
@@ -71,10 +82,13 @@ private:
 
     BackupOptions backupOptions;    // mainWindow Options
     QSet<QString> srcSet;
+    QSet<QString> DLset;
 
 //   QMap<QThread*, QListWidgetItem*> threadItemMap;
     QMap<uint, BackupThread*> threadMap;
     int ingRow,edRow;  // 当前监视列表的任务数（行号+1）
+
+    RemoteFileDialog* fd;
 };
 #endif // MAINWINDOW_H
 

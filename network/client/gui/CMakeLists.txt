@@ -14,6 +14,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
 
+
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp mainwindow.h  mainwindow.ui
@@ -25,6 +26,7 @@ set(PROJECT_SOURCES
         myfiledialog.h myfiledialog.cpp
         backupthread.h backupthread.cpp
         daemonthread.h daemonthread.cpp
+        remotefiledialog.h remotefiledialog.cpp remotefiledialog.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -55,7 +57,6 @@ target_link_libraries(gui PRIVATE zpods_lib spdlog Qt${QT_VERSION_MAJOR}::Widget
     )
 target_precompile_headers(${PROJECT_NAME} PRIVATE ${PCH_PATH})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/ZpodsLib/src)
-
 
 set_target_properties(gui PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com

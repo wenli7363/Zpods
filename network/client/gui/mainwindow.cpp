@@ -15,10 +15,13 @@ MainWindow::MainWindow(QWidget *parent)
 
 //    this->daemonThread = new DaemonThread();
 
+//    fd = new RemoteFileDialog();
+
     this->filterConfig = nullptr;
     backupOptions = BackupOptions();
 
     ui->srcListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    ui->srcListWidgetDL->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
     // ======================================   monitor绘制  ============================
     QStringList headerLabels;
@@ -109,6 +112,7 @@ void MainWindow::enableRemote()
            loginDialog->show();
            loginDialog->exec();
 
+
           if(loginDialog->logined){
                 ui->targetLabel->setText("远程服务器IP：端口号");
                 ui->targetPath->setEnabled(false);
@@ -125,6 +129,7 @@ void MainWindow::enableRemote()
             ui->targetPath->setEnabled(true);
             ui->encryptChkBox->setEnabled(true);
             ui->periodicWidget->setEnabled(true);
+            loginDialog->logined = false;
             // 若已登录再退出，停止daemon
 //            if(daemonThread->isRunning()){
 //                daemonThread->terminate();
@@ -284,114 +289,15 @@ void MainWindow::connectInit()
     enableRSrcBtn();
     enableRTargetBtn();
     enableRestoreBtn();
+    enableList();
+    enableLogoutBtn();
+    enabledeleteBtnDL();
+    enableDownloadBtn();
+    enableTargetBtn();
+    enableTargetBtnDL();
 }
 
-// ==============================================================================================
-void MainWindow::handleBackuptest(BackupOptions bpOptions)
-{
-    // 获取src列表
-    for (int i = 0; i < ui->srcListWidget->count(); ++i)
-    {
-        QListWidgetItem *item = ui->srcListWidget->item(i);
-        QString text = item->text();
-        bpOptions.src_path_list.push_back(text.toStdString());
-    }
 
-   // 保存这次备份的所有选项
-   if (bpOptions.src_path_list.empty()) {
-       QMessageBox::critical(this, "提示", "请选择要备份的文件！");
-       spdlog::error("src path list is empty!");
-       return;
-    }
-
-   if(!bpOptions.remoteChk && backupOptions.target_dir.empty() ){
-       QMessageBox::critical(this,"提示","请选择要保存的路径");
-       spdlog::error("target dir is empty!");
-       return;
-    }
-
-    // 保存过滤器信息
-    if(backupOptions.filterChk)
-    {
-        // 把filterconfig一个个复制到对应变量中
-        bpOptions.config.filter.min_date = filterConfig->min_date;
-        bpOptions.config.filter.max_date = filterConfig->max_date;
-        bpOptions.config.filter.min_size = filterConfig->minSize;
-        bpOptions.config.filter.max_size = filterConfig->maxSize;
-        bpOptions.config.filter.types = filterConfig->types;
-        bpOptions.config.filter.re_list = filterConfig->re_list;
-    }
-
-    if(backupOptions.periodChk){
-        bpOptions.interval = ui->periodicWidget->getValue();
-    }else{
-        bpOptions.interval = -1;
-    }
-
-    if(backupOptions.cmpsChk)
-    {
-        bpOptions.config.compress = true;
-    }else{
-        bpOptions.config.compress = false;
-    }
-
-    if(backupOptions.encryptChk)
-    {
-        bpOptions.config.crypto_config = zpods::CryptoConfig(backupOptions.password);
-    }
-
-    // execute the backup task
-    do
-    {
-        if (bpOptions.target_dir.empty())
-        {
-            bpOptions.target_dir = ZPODS_HOME_PATH;
-        }
-
-        for (const auto& item : bpOptions.src_path_list)
-        {
-            bpOptions.config.tree_dir = item;
-            if (bpOptions.synChk)
-            {
-                zpods::sync_backup(bpOptions.target_dir.c_str(), bpOptions.config);
-            }
-            else
-            {
-                zpods::backup(bpOptions.target_dir.c_str(), bpOptions.config);
-            }
-            let backup_file_path = bpOptions.config.current_pod_path.parent_path();
-
-            if (bpOptions.remoteChk)
-            {
-                let status = loginDialog->user.upload_pods(backup_file_path.c_str());
-                if (status == zpods::Status::OK)
-                {
-                    spdlog::info("upload successfully!");
-                }
-                else
-                {
-                    spdlog::info("fail to upload");
-                }
-            }
-        }
-
-        if (bpOptions.periodChk)
-        {
-            std::this_thread::sleep_for(std::chrono::seconds(bpOptions.interval));
-        }
-    } while (bpOptions.interval > 0); // periodic backup
-
-    ui->srcListWidget->clear();
-    ui->targetPath->clear();
-    ui->filterChkBox->setCheckState(Qt::Unchecked);
-    ui->cmpsChkBox->setCheckState(Qt::Unchecked);
-    ui->encryptChkBox->setCheckState(Qt::Unchecked);
-//    ui->remoteChkBox->setCheckState(Qt::Unchecked);       // 保持登录状态
-    ui->synChkBox->setCheckState(Qt::Unchecked);
-    ui->periodicWidget->setUnchecked();
-    srcSet.clear();
-}
-// ==============================================================================================
 
 void MainWindow::handleBackup(BackupOptions backupOptions)
 {
@@ -686,3 +592,115 @@ void MainWindow::handleLoginFailed()
     });
 }
 
+// 选择要下载的文件
+void MainWindow::enableList()
+{
+    connect(ui->listBtn, &QPushButton::clicked,this, [this](){
+        if(loginDialog->logined){
+            auto fileList = getRemoteFileList();
+            fd = new RemoteFileDialog(this, fileList);          // 这里会产生多个实例，要改！！！！
+            fd->show();
+            fd->exec();
+            for(const auto& file : fd->selectedDLFiles)
+            {
+                if(!DLset.contains(file))
+                {
+                    DLset.insert(file);
+                    QListWidgetItem* item = new QListWidgetItem(file);
+                    ui->srcListWidgetDL->addItem(item);
+                }
+            }
+        }else{
+            QMessageBox::critical(this,"警告","请先登录！");
+            ui->remoteChkBox->setCheckState(Qt::Checked);
+        }
+
+
+
+
+    });
+}
+
+
+ QList<QPair<QString,QString>>  MainWindow::getRemoteFileList(){
+//    QStringList remotePodsList;
+//    QMap<QString, QStringList> remoteFiles;
+     QList<QPair<QString,QString>> remoteFiles;
+    PodsQueryResult result;
+    loginDialog->user.query_pods(result);
+    for (const auto& [pods_name, pod_list] : result)
+    {
+        for (const auto& [pod_name, last_modified_ts] : pod_list)
+        {
+//            spdlog::info("{}/{}", pods_name, pod_name);
+            QString pod = QString::fromStdString(pod_name);
+            QString pods = QString::fromStdString(pods_name);
+
+            if(!pod.contains(".META")){
+                remoteFiles.append({pods,pod});
+            }
+
+        }
+    }
+
+    return remoteFiles;
+}
+
+void MainWindow::enableLogoutBtn()
+{
+    connect(ui->logoutBtn, &QPushButton::clicked, this, [this](){
+        ui->remoteChkBox->setCheckState(Qt::Unchecked);
+    });
+
+}
+
+void MainWindow::enabledeleteBtnDL()
+{
+    connect(ui->deleteBtnDL, &QPushButton::clicked, this, [this](){
+        QList<QListWidgetItem *> selectedItems = ui->srcListWidgetDL->selectedItems();
+        for (QListWidgetItem *item : selectedItems)
+        {
+            int row = ui->srcListWidgetDL->row(item);
+            QString itemText = item -> text();
+            DLset.remove(itemText);
+            delete ui->srcListWidgetDL ->takeItem(row);
+        }
+    });
+}
+
+void MainWindow::enableDownloadBtn()
+{
+    connect(ui->downloadBtn, &QPushButton::clicked, this,[this](){
+        if(this->DLset.empty())
+        {
+            QMessageBox::critical(this,"错误","请选择需要下载的PODS");
+            return;
+        }
+
+        if(ui->targetPathDL->text().isEmpty())
+        {
+            QMessageBox::critical(this,"错误","请选择一个保存的路径");
+            return;
+        }
+
+        // 补充代码
+        for(const QString &item : this->DLset)
+               {
+                   qDebug()<<item;
+               }
+    });
+}
+
+void MainWindow::enableTargetBtnDL()
+{
+    connect(ui->targetBtnDL, &QPushButton::clicked, this, [this](){
+        QString targetPath = QFileDialog::getExistingDirectory(this, "选择目的路径", QDir::homePath());
+
+        if (!targetPath.isEmpty())
+        {
+            ui->targetPathDL->setText(targetPath);
+//            backupOptions.target_dir = targetPath.toStdString();
+//            qDebug()<<targetPath;
+        }
+    });
+}
