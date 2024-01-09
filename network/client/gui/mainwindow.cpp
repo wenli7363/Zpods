@@ -685,9 +685,18 @@ void MainWindow::enableDownloadBtn()
 
         // 补充代码
         for(const QString &item : this->DLset)
-               {
-                   qDebug()<<item;
-               }
+        {
+                qDebug()<<item;
+                QStringList parts = item.split('/');
+                if(parts.size() == 2)
+                {
+                    auto pods = parts[0].toStdString();
+                    auto pod = parts[1].toStdString();
+                    loginDialog->user.download_pod(pods, pod, this->dowloadTargetPath);
+                }else{
+                    qDebug()<<"Failed to split the string"<<item;
+                }
+        }
     });
 }
 
@@ -699,6 +708,7 @@ void MainWindow::enableTargetBtnDL()
         if (!targetPath.isEmpty())
         {
             ui->targetPathDL->setText(targetPath);
+            dowloadTargetPath = targetPath.toStdString();
 //            backupOptions.target_dir = targetPath.toStdString();
 //            qDebug()<<targetPath;
         }

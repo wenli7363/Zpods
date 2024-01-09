@@ -88,7 +88,9 @@ private:
     QMap<uint, BackupThread*> threadMap;
     int ingRow,edRow;  // 当前监视列表的任务数（行号+1）
 
+    // DOWLOAD PAGE
     RemoteFileDialog* fd;
+    std::string dowloadTargetPath;
 };
 #endif // MAINWINDOW_H
 
