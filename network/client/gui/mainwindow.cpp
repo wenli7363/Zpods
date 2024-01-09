@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent)
     this->loginDialog = new LoginDialog(this);
     this->loginDialog->hide();
 
-//    this->daemonThread = new DaemonThread();
+    this->daemonThread = new DaemonThread(this);
 
 //    fd = new RemoteFileDialog();
 
@@ -131,16 +131,14 @@ void MainWindow::enableRemote()
             ui->periodicWidget->setEnabled(true);
             loginDialog->logined = false;
             // 若已登录再退出，停止daemon
-//            if(daemonThread->isRunning()){
-//                daemonThread->terminate();
-//                daemonThread->wait();
+            if(daemonThread->isRunning()){
+                daemonThread->terminate();
+                daemonThread->wait();
 
-//                 // 把实例清空
-//                delete daemonThread;
-//                this->daemonThread =new DaemonThread();
-//            }
-
-//            ui->remoteChkBox->setCheckState(Qt::Unchecked);
+                 // 把实例清空
+                delete daemonThread;
+                this->daemonThread =new DaemonThread(this);
+            }
         }
     });
 }
@@ -167,8 +165,6 @@ void MainWindow::enableSrcBtn()
         if(dialog->exec()==QDialog::Accepted)
         {
             QStringList srcFileList = dialog->selectedFiles();
-
-//            ui->srcListWidget->clear();
 
             for(const auto& fileName : srcFileList)
             {
@@ -293,7 +289,6 @@ void MainWindow::connectInit()
     enableLogoutBtn();
     enabledeleteBtnDL();
     enableDownloadBtn();
-    enableTargetBtn();
     enableTargetBtnDL();
 }
 
@@ -354,11 +349,25 @@ void MainWindow::handleBackup(BackupOptions backupOptions)
 
 
     // 如果同时启用了remote+sync，开启daemon进行同步
-//   if(backupOptions.remoteChk && backupOptions.synChk)
-//   {
-//            daemonThread->setUser(&loginDialog->user);
-//            this->daemonThread->start();
-//   }
+   if(backupOptions.remoteChk && backupOptions.synChk)
+//    if(backupOptions.synChk)
+   {
+       zpods::DaemonConfig config;
+               config.query_pods = [&](PodsQueryResult& result) {
+                   return loginDialog->user.query_pods(result);
+               };
+               config.download_pod = [&](const std::string& pods_name,
+                                         const std::string& pod_name,
+                                         const std::string& dir) {
+                   return loginDialog->user.download_pod(pods_name, pod_name, dir);
+               };
+               config.upload_pod = [&](const std::string& pod_path) {
+                   return loginDialog->user.upload_pod(pod_path);
+               };
+
+        daemonThread ->SetConfig(config);
+        this->daemonThread->start();
+   }
 
     if(backupOptions.remoteChk)
     {
@@ -411,7 +420,9 @@ void MainWindow::handleBackup(BackupOptions backupOptions)
     this->backupOptions = BackupOptions();      // 将backupOption清空，供下次使用
 
     ui->srcListWidget->clear();
-    ui->targetPath->clear();
+    if(!loginDialog->logined){
+        ui->targetPath->clear();
+    }
     ui->filterChkBox->setCheckState(Qt::Unchecked);
     ui->cmpsChkBox->setCheckState(Qt::Unchecked);
     ui->encryptChkBox->setCheckState(Qt::Unchecked);
@@ -614,9 +625,6 @@ void MainWindow::enableList()
             QMessageBox::critical(this,"警告","请先登录！");
             ui->remoteChkBox->setCheckState(Qt::Checked);
         }
-
-
-
 
     });
 }

@@ -6,7 +6,7 @@
 #include "backupthread.h"
 #include "remotefiledialog.h"
 
-//#include "daemonthread.h"
+#include "daemonthread.h"
 
 #include <QPushButton>
 #include <QFileDialog>
@@ -20,9 +20,6 @@
 #include <QListWidgetItem>
 #include <QTableWidget>
 #include <QTableWidgetItem>
-#include <QUrl>
-#include <libssh/libssh.h>
-#include <libssh/sftp.h>
 
 
 
@@ -78,7 +75,7 @@ private:
     Ui::MainWindow *ui;
     LoginDialog* loginDialog;              // 只有一个对话框，一次登录一个用户
     std::shared_ptr<FilterConfig> filterConfig;
-//    DaemonThread* daemonThread;  // 一次只有一个用户，也只有一个daemon
+    DaemonThread* daemonThread;  // 一次只有一个用户，也只有一个daemon
 
     BackupOptions backupOptions;    // mainWindow Options
     QSet<QString> srcSet;

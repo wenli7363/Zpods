@@ -11,16 +11,18 @@ class DaemonThread: public QThread
     Q_OBJECT
 
 public:
-    DaemonThread(QObject* parent = nullptr);
-    bool isRunning();         // 判断daemon是否运行中
-    void setUser(zpods::RpcUser* loginedUser);
+    DaemonThread(QObject* parent);
+    void SetConfig(const zpods::DaemonConfig &config);
+    bool isRunning();
 
 protected:
     void run() override;
 
 private:
-    zpods::RpcUser* daemonUser;
-    bool daemonStatus;
+    zpods::DaemonConfig config;
+    bool isRun;
 };
 
 #endif // DAEMONTHREAD_H
+
+

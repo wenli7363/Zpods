@@ -77,7 +77,12 @@ Status PodsManager::load_pods(const fs::zpath& pods_path,
 
                             // we must delete some existed pea
                             ZPODS_ASSERT(pea_map.contains(path));
-                            cur_pod.erase(pea_map[path]);
+                            // cur_pod.erase(pea_map[path]);
+                            auto it = pea_map.find(path);
+                            if (it != pea_map.end()) {
+                                cur_pod.erase(it->second);
+                                pea_map.erase(it);  // Optional: Remove the entry from pea_map as well
+                            }
                         }
                         else
                         {
