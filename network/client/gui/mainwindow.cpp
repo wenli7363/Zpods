@@ -6,25 +6,25 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    setWindowTitle("Zpods"); // set window title
+    setWindowTitle("Zpods");
     setFixedSize(580, 580);
+    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
+    // init ZPODS path, delete the existed META infomation
     if (fs::exists(ZPODS_HOME_PATH)) {
         try {
             fs::remove_all(ZPODS_HOME_PATH.c_str());
-            std::cout << "已成功删除路径及其内容。" << std::endl;
+            std::cout << "初始化ZPODS路径成功。" << std::endl;
         } catch (const std::exception& e) {
             std::cerr << "删除路径时发生错误: " << e.what() << std::endl;
         }
     } else {
-        std::cout << "路径不存在，无需删除。" << std::endl;
+        std::cout << "ZPODS路径已配置成功" << std::endl;
     }
 
     // create loginDialog
     this->loginDialog = new LoginDialog(this);
     this->loginDialog->hide();
-
-    //    fd = new RemoteFileDialog();
 
     this->filterConfig = nullptr;
     backupOptions = BackupOptions();
@@ -32,8 +32,7 @@ MainWindow::MainWindow(QWidget* parent)
     ui->srcListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
     ui->srcListWidgetDL->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
-    // ======================================   monitor绘制
-    // ============================
+    // ---------------------------------   draw monitor page  -------------------------------
     QStringList headerLabels;
     headerLabels << "任务号"
                  << "保存的文件名"
@@ -57,8 +56,7 @@ MainWindow::MainWindow(QWidget* parent)
     ui->ingTable->setSelectionMode(QAbstractItemView::SingleSelection);
 
     // 定义每一列的百分比
-    QList<int> columnWidths = {10, 50, 7, 7,
-                               7,  7,  12}; // 以百分比表示每一列的宽度
+    QList<int> columnWidths = {10, 50, 7, 7, 7,  7,  12}; // 以百分比表示每一列的宽度
 
     int ingWidth = ui->ingTable->width(); // 获取TableWidget的宽度
     int edWidth = ui->edTable->width();
@@ -71,16 +69,15 @@ MainWindow::MainWindow(QWidget* parent)
         ui->edTable->horizontalHeader()->resizeSection(i, width2);
     }
 
-    // =================================================================================
-
     ingRow = edRow = 0;
+    // --------------------------------------------------------------------------------------
 
     qRegisterMetaType<ThreadInfo>("ThreadInfo");
 
+    // set the remote server address
     std::string server_addr= "47.108.88.125:50051";
     zpods::DbHandle::Instance().put_cached_addr(server_addr);
 
-    //    this->daemonThread = new DaemonThread(this);
     // connect function for all checkbox
     connectInit();
 }
@@ -482,7 +479,7 @@ void MainWindow::handleBackup(BackupOptions backupOptions)
 
     connect(backupThread, &BackupThread::finishedSignal, this,
             [this, backupThread](ThreadInfo info) {
-                QString message = QStringLiteral("%1备份成功").arg(info.taskID);
+                QString message = QStringLiteral("%1-PODS备份成功").arg(info.filename);
                 QMessageBox::information(this, "结束任务提示", message);
                 threadMap.remove(info.taskID);
                 for (int row = 0; row < ui->ingTable->rowCount(); ++row)
@@ -718,7 +715,7 @@ void MainWindow::enableDownloadBtn()
         // 补充代码
         for (const QString& item : this->DLset)
         {
-            qDebug() << item;
+//            qDebug() << item;
             QStringList parts = item.split('/');
             if (parts.size() == 2)
             {
@@ -729,7 +726,7 @@ void MainWindow::enableDownloadBtn()
             }
             else
             {
-                qDebug() << "Failed to split the string" << item;
+//                qDebug() << "Failed to split the string" << item;
             }
         }
     });

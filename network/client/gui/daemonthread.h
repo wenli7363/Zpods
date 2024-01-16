@@ -1,8 +1,9 @@
+// Daemon Thread
+// daemon use for monitoring synchronization tasks
 #ifndef DAEMONTHREAD_H
 #define DAEMONTHREAD_H
 #include <QDebug>
 #include <QThread>
-//#include "ZpodsLib/src/network/network.h"
 #include "../grpc_client.h"
 #include "ZpodsLib/src/core/daemon.h"
 

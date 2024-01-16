@@ -38,21 +38,26 @@ class MainWindow : public QMainWindow
     // 槽函数初始化
     void connectInit();
     // 槽函数
+    // the connect function of checkboxes
     void enableFileFilter();
     void enableRemote();
-    void enableSrcBtn();
-    void enableDeleteBtn();
-    void enableTargetBtn();
     void enableCmpsChkBox();
     void enableEncryptChkBox();
     void enableSynChkBox();
     void enablePeriodBox();
+
+    // backup page
+    void enableSrcBtn();
+    void enableDeleteBtn();
+    void enableTargetBtn();
+
     void handleRegist();
     void handleBackup(BackupOptions backupOptions);
     void handleRestore(std::string src, std::string target, QString psw);
     void handleLoginFailed();
     void enableStartBtn();
 
+    // restore page
     void enableRSrcBtn();
     void enableRTargetBtn();
     void enableRestoreBtn();
@@ -61,6 +66,7 @@ class MainWindow : public QMainWindow
     // 功能函数
     void regist();
 
+    // remote download page
     void enableList();
     void enableLogoutBtn();
     void enabledeleteBtnDL();
@@ -71,7 +77,6 @@ class MainWindow : public QMainWindow
   private:
     Ui::MainWindow* ui;
     LoginDialog* loginDialog; // 只有一个对话框，一次登录一个用户
-//    DaemonThread* daemonThread; // 一次只有一个用户，也只有一个daemon
     std::shared_ptr<FilterConfig> filterConfig;
 
     BackupOptions backupOptions; // mainWindow Options

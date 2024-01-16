@@ -32,15 +32,6 @@ void LoginDialog::loginDialogReset() {
     ui->pswLineEdit->clear();
     logined = false;
     user = {};
-//    if (daemonThread->isRunning())
-//    {
-//        daemonThread->terminate();
-//        daemonThread->wait();
-
-//        // 把实例清空
-//        delete daemonThread;
-//        this->daemonThread = new DaemonThread(this);
-//    }
 }
 
 std::string LoginDialog::get_username() {
@@ -107,8 +98,6 @@ void LoginDialog::connectRegBtn2()
          std::string psw = get_Rpassword();
          std::string psw2 = get_Rpassword2();
 
-         //之前提醒了用户，如果用户还是不输入，就不执行了。
-         // 避免了用户输入为空时，注册了一个空用户
          if(userName == "" || psw == "")
          {
 //            QMessageBox::critical(this,"提示","用户名和密码不能为空");
@@ -202,7 +191,6 @@ void LoginDialog::closeEvent(QCloseEvent *event)
 void LoginDialog::startDaemon()
 {
     zpods::DaemonConfig config;
-//    DaemonThread* daemonThread = new DaemonThread(this);
 
     config.query_pods = [&](PodsQueryResult& result) {
         return user.query_pods(result);

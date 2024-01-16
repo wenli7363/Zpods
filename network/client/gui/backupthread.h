@@ -1,4 +1,5 @@
 // BackupThread.h
+// execute a backup action
 #ifndef BACKUPTHREAD_H
 #define BACKUPTHREAD_H
 
@@ -29,7 +30,7 @@ struct BackupOptions
     std::string target_dir;
     std::string password;
     zpods::BackupConfig config;
-    int interval;
+    int interval;       //period backup
 
     // fileter flag
     bool cmpsChk, encryptChk, synChk;
@@ -58,22 +59,26 @@ class BackupThread : public QThread
     explicit BackupThread(QObject* parent = nullptr);
     ~BackupThread();
 
-    // 设置备份相关参数的函数
+    // set backup parameters
     void setBackupParameters(BackupOptions backupOptions);
+    // when value = true, the thread should stop
     void setShouldExit(bool value);
 
     ThreadInfo setThreadInfo();
 
   signals:
+    // the backup thread started
     void startedSignal(ThreadInfo info);
+    // the backup thread finished
     void finishedSignal(ThreadInfo info);
 
   protected:
     void run() override;
 
   private:
-    // 定义备份相关的私有成员变量
+    // all options about this backup action
     BackupOptions backupOptions;
+    // decide the thread to stop or not
     std::atomic<bool> shouldExit;
 };
 

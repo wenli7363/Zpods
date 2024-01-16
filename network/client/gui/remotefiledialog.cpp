@@ -19,9 +19,6 @@ RemoteFileDialog::RemoteFileDialog(
                 this->selectedDLFiles << item->text();
             }
         }
-
-        // 打印选中的文件名（仅作为示例，实际中你可以根据需要使用这个QStringList）
-        qDebug() << "Selected Files: " << this->selectedDLFiles;
         close();
     });
 
