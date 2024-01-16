@@ -2,39 +2,37 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "ui_mainwindow.h"
 #include "backupthread.h"
 #include "remotefiledialog.h"
+#include "ui_mainwindow.h"
 
-#include "daemonthread.h"
-
-#include <QPushButton>
-#include <QFileDialog>
-#include <QDir>
-#include <QListWidget>
-#include <QStringList>
-#include <QMessageBox>
-#include <QInputDialog>
-#include <QSet>
 #include <QDebug>
+#include <QDir>
+#include <QFileDialog>
+#include <QInputDialog>
+#include <QListWidget>
 #include <QListWidgetItem>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QSet>
+#include <QStringList>
 #include <QTableWidget>
 #include <QTableWidgetItem>
 
-
-
-
 QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
+namespace Ui
+{
+class MainWindow;
+}
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
-public:
+  public:
     // 方法
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
     // 槽函数初始化
@@ -55,7 +53,6 @@ public:
     void handleLoginFailed();
     void enableStartBtn();
 
-
     void enableRSrcBtn();
     void enableRTargetBtn();
     void enableRestoreBtn();
@@ -69,27 +66,23 @@ public:
     void enabledeleteBtnDL();
     void enableDownloadBtn();
     void enableTargetBtnDL();
-     QList<QPair<QString,QString>> getRemoteFileList();
+    QList<QPair<QString, QString>> getRemoteFileList();
 
-private:
-    Ui::MainWindow *ui;
-    LoginDialog* loginDialog;              // 只有一个对话框，一次登录一个用户
+  private:
+    Ui::MainWindow* ui;
+    LoginDialog* loginDialog; // 只有一个对话框，一次登录一个用户
+//    DaemonThread* daemonThread; // 一次只有一个用户，也只有一个daemon
     std::shared_ptr<FilterConfig> filterConfig;
-    DaemonThread* daemonThread;  // 一次只有一个用户，也只有一个daemon
 
-    BackupOptions backupOptions;    // mainWindow Options
+    BackupOptions backupOptions; // mainWindow Options
     QSet<QString> srcSet;
     QSet<QString> DLset;
 
-//   QMap<QThread*, QListWidgetItem*> threadItemMap;
     QMap<uint, BackupThread*> threadMap;
-    int ingRow,edRow;  // 当前监视列表的任务数（行号+1）
+    int ingRow, edRow; // 当前监视列表的任务数（行号+1）
 
     // DOWLOAD PAGE
     RemoteFileDialog* fd;
     std::string dowloadTargetPath;
 };
 #endif // MAINWINDOW_H
-
-
-

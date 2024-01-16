@@ -19,4 +19,8 @@ struct DaemonConfig
 // the entry of the daemon
 // the daemon will automatically sync the pods with remote
 void zpods_daemon_entry(DaemonConfig config);
+
+// overloaded version
+// used in multiThread env (for gui)
+void zpods_daemon_entry(DaemonConfig config, std::atomic<bool>& stopRequested);
 } // namespace zpods

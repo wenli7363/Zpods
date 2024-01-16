@@ -7,7 +7,7 @@
 #include <termios.h>
 #include <QString>
 #include "../grpc_client.h"
-//#include "ZpodsLib/src/zpods_lib.h"
+#include "daemonthread.h"
 
 
 namespace Ui {
@@ -20,6 +20,7 @@ class LoginDialog : public QDialog
 
 public:
     zpods::RpcUser user;
+    DaemonThread* daemonThread; // 一次只有一个用户，也只有一个daemon
     bool logined;
 
     explicit LoginDialog(QWidget *parent = nullptr);
@@ -39,6 +40,7 @@ public:
     void connectRegBtn();
     void connectRegBtn2();
     void connectReturnBtn();
+    void startDaemon();
 
 protected:
     void closeEvent(QCloseEvent *event) ;

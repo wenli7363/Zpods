@@ -1,22 +1,26 @@
 #include "daemonthread.h"
 
-//DaemonThread::DaemonThread(const zpods::DaemonConfig& config) : config(config) {}
-//DaemonThread::DaemonThread(){}
-DaemonThread::DaemonThread(QObject* parent = nullptr){
-    this->isRun = false;
-}
-
-void DaemonThread::run()
+DaemonThread::DaemonThread(QObject* parent)
+    : QThread(parent), stopRequested(false)
 {
-    zpods::zpods_daemon_entry(config);
 }
 
-void DaemonThread::SetConfig(const zpods::DaemonConfig &config)
+void DaemonThread::SetConfig(const zpods::DaemonConfig& config)
 {
     this->config = config;
 }
 
+void DaemonThread::run()
+{
+    zpods::zpods_daemon_entry(config, stopRequested);
+}
+
+void DaemonThread::stopThread()
+{
+    stopRequested.store(true);
+}
+
 bool DaemonThread::isRunning()
 {
-    return isRun;
+    return !stopRequested;
 }

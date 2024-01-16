@@ -1,21 +1,20 @@
 #ifndef MULTISELECTCOMBOBOX_H
 #define MULTISELECTCOMBOBOX_H
 
-
 #pragma once
 
-#include <QComboBox>
-#include <QListWidget>
-#include <QLineEdit>
 #include <QCheckBox>
+#include <QComboBox>
 #include <QEvent>
+#include <QLineEdit>
+#include <QListWidget>
 
 class MultiSelectComboBox : public QComboBox
 {
     Q_OBJECT
 
-public:
-    MultiSelectComboBox(QWidget *parent = Q_NULLPTR);
+  public:
+    MultiSelectComboBox(QWidget* parent = Q_NULLPTR);
     ~MultiSelectComboBox();
 
     //隐藏下拉框
@@ -31,7 +30,7 @@ public:
     QStringList currentText();
 
     //返回当前选项条数
-    int count()const;
+    int count() const;
 
     //设置搜索框默认文字
     void SetSearchBarPlaceHolderText(const QString _text);
@@ -57,18 +56,17 @@ public:
     //设置搜索框是否禁用
     void SetSearchBarHidden(bool _flag);
 
-protected:
-
+  protected:
     //事件过滤器
-    virtual bool eventFilter(QObject *watched,QEvent *event);
+    virtual bool eventFilter(QObject* watched, QEvent* event);
 
     //滚轮事件
-    virtual void wheelEvent(QWheelEvent *event);
+    virtual void wheelEvent(QWheelEvent* event);
 
     //按键事件
-    virtual void keyPressEvent(QKeyEvent *event);
+    virtual void keyPressEvent(QKeyEvent* event);
 
-private slots:
+  private slots:
 
     //槽函数：文本框文本变化
     void stateChange(int _row);
@@ -79,22 +77,20 @@ private slots:
     //槽函数：点击下拉框选项
     void itemClicked(int _index);
 
-signals:
+  signals:
 
     //信号：发送当前选中选项
     void selectionChange(const QString _data);
 
-private:
+  private:
     //下拉框
     QListWidget* list_widget_;
     //文本框，搜索框
-    QLineEdit* line_edit_, *search_bar_;
+    QLineEdit *line_edit_, *search_bar_;
     //搜索框显示标志
     bool hidden_flag_;
     //下拉框显示标志
     bool show_flag_;
 };
-
-
 
 #endif // MULTISELECTCOMBOBOX_H

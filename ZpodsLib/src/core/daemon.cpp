@@ -86,6 +86,7 @@ class PodsSynchronizer
     std::string pods_name_;
     mutable bool has_pull_ = false;
 };
+
 void thread_for_pods(std::string tree_dir, std::string pods_dir,
                      const DaemonConfig& daemon_config)
 {
@@ -146,6 +147,82 @@ void thread_for_pods(std::string tree_dir, std::string pods_dir,
         }
     }
 }
+
+// overloaded version, just add a 'stopRequested' vatiable to stop the thread in multiThread env 
+void thread_for_pods_ol(std::string tree_dir, std::string pods_dir,
+                     const DaemonConfig& daemon_config, std::atomic<bool>& stopRequested)
+{
+    constexpr int interval = 5000; // 5s
+    constexpr int offset = 1000;   // add some random offset
+
+    let dest_dir = fs::path(pods_dir).parent_path();
+
+    BackupConfig config;
+    let_ref mapping = PodsManager::Instance()->get_path_mapping();
+    for (let_ref mp : mapping)
+    {
+        if (mp.pods_path == pods_dir)
+        {
+            config = mp.config;
+            config.tree_dir = tree_dir;
+            break;
+        }
+    }
+
+    let synchronizer = PodsSynchronizer(daemon_config, pods_dir);
+    while (!stopRequested.load())
+    {
+        { // sample from [interval - offset, interval + offset]
+            let_mut sleep_time = interval + rand() % (offset * 2) - offset;
+            std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time));
+        }
+
+        spdlog::info("start sync for {}...", pods_dir);
+
+        { // backup
+            let status = backup(dest_dir.c_str(), config);
+            if (status != Status::OK)
+            {
+                spdlog::error("backup failed : {}", (int)status);
+            }
+        }
+
+        { // synchronize local and remote
+            let status = synchronizer.local_remote_sync();
+            if (status != Status::OK)
+            {
+                spdlog::error("local_remote_sync failed : {}", (int)status);
+            }
+        }
+
+        if (synchronizer.has_pull())
+        { // synchronize locally
+            let status = restore(pods_dir.c_str(), tree_dir.c_str(), config);
+            if (status != Status::OK)
+            {
+                spdlog::error("restore failed : {}", (int)status);
+            }
+            else
+            {
+                spdlog::info("synchronize successfully");
+            }
+        }
+    }
+}
+
+// overloaded version for gui
+void init_daemon(const DaemonConfig& config, std::atomic<bool>& stopRequested)
+{
+    let manager = PodsManager::Instance();
+    // create one thread for each path
+    for (let_ref mapping : manager->get_path_mapping())
+    {
+        std::thread(thread_for_pods_ol, mapping.tree_path, mapping.pods_path,
+                    config, std::ref(stopRequested))
+            .detach();
+    }
+}
+
 void init_daemon(const DaemonConfig& config)
 {
     let manager = PodsManager::Instance();
@@ -212,6 +289,66 @@ void zpods::zpods_daemon_entry(DaemonConfig config)
 
                 manager->record_mapping(src_path, pods_dir, backup_config);
                 std::thread(thread_for_pods, src_path, pods_dir, config)
+                    .detach();
+            }
+        }
+    }
+}
+
+// overloaded version for gui
+void zpods::zpods_daemon_entry(DaemonConfig config, std::atomic<bool>& stopRequested)
+{
+    init_daemon(config,stopRequested);
+
+    let manager = PodsManager::Instance();
+    while (!stopRequested.load())
+    {
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+
+        PodsQueryResult result;
+        config.query_pods(result);
+
+        let_ref mapping = manager->get_path_mapping();
+        std::unordered_set<std::string> pods_list;
+        for (let_ref mp : mapping)
+        {
+            spdlog::info("existed: {}", fs::get_last_part(mp.pods_path));
+            pods_list.insert(fs::get_last_part(mp.pods_path));
+        }
+        for (let_ref[pods_name, _] : result)
+        {
+            if (!pods_list.contains(pods_name))
+            {
+                spdlog::info("new pods {} detected", pods_name);
+                // record the new mapping and create a thread for it
+                let src_path = pods_name.substr(0, pods_name.find_last_of('-'));
+                let pods_dir = ZPODS_HOME_PATH / pods_name;
+
+                fs::create_directory_if_not_exist(src_path.c_str());
+                fs::create_directory_if_not_exist(pods_dir.c_str());
+
+                // download meta file
+                do
+                {
+                    let status = config.download_pod(pods_name, ".META",
+                                                     pods_dir.parent_path());
+                    if (status == Status::OK)
+                    {
+                        break;
+                    }
+                } while (true);
+
+                // parse meta file
+                std::ifstream ifs(pods_dir / ".META");
+                ZPODS_ASSERT(ifs.is_open());
+
+                spdlog::info("parse meta file begin");
+                BackupConfig backup_config;
+                backup_config.deserialize(ifs);
+                spdlog::info("parse meta file successfully");
+
+                manager->record_mapping(src_path, pods_dir, backup_config);
+                std::thread(thread_for_pods_ol, src_path, pods_dir, config, std::ref(stopRequested))
                     .detach();
             }
         }

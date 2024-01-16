@@ -2,23 +2,24 @@
 #ifndef BACKUPTHREAD_H
 #define BACKUPTHREAD_H
 
-#include "pch.h"
-#include "logindialog.h"
-#include "filefilterdialog.h"
-#include "myfiledialog.h"
-#include "periodicwidget.h"
-#include "zpods_lib.h"
-#include "termios.h"
 #include "ZpodsLib/src/base/fs.h"
+#include "filefilterdialog.h"
+#include "logindialog.h"
+#include "myfiledialog.h"
+#include "pch.h"
+#include "periodicwidget.h"
+#include "termios.h"
+#include "zpods_lib.h"
 
-#include <QThread>
-#include <QString>
 #include <QDebug>
+#include <QString>
+#include <QThread>
 
-struct ThreadInfo{
+struct ThreadInfo
+{
     uint taskID;
     QString filename;
-    QString cmps,syn,encrypt,remote,period;
+    QString cmps, syn, encrypt, remote, period;
 };
 
 struct BackupOptions
@@ -36,23 +37,25 @@ struct BackupOptions
     bool filterChk;
     bool remoteChk; //表示是否开启远程功能，只有成功登陆了才为true
 
-
     BackupOptions()
-            : cmpsChk(false), encryptChk(false), synChk(false),
-              periodChk(false), filterChk(false), remoteChk(false) {
+        : cmpsChk(false),
+          encryptChk(false),
+          synChk(false),
+          periodChk(false),
+          filterChk(false),
+          remoteChk(false)
+    {
 
         interval = -1;
-
     }
 };
-
 
 class BackupThread : public QThread
 {
     Q_OBJECT
 
-public:
-    explicit BackupThread(QObject *parent = nullptr);
+  public:
+    explicit BackupThread(QObject* parent = nullptr);
     ~BackupThread();
 
     // 设置备份相关参数的函数
@@ -61,18 +64,17 @@ public:
 
     ThreadInfo setThreadInfo();
 
-signals:
+  signals:
     void startedSignal(ThreadInfo info);
     void finishedSignal(ThreadInfo info);
 
-protected:
+  protected:
     void run() override;
 
-private:
+  private:
     // 定义备份相关的私有成员变量
     BackupOptions backupOptions;
     std::atomic<bool> shouldExit;
 };
 
 #endif // BACKUPTHREAD_H
-

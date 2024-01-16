@@ -1,28 +1,27 @@
 #ifndef DAEMONTHREAD_H
 #define DAEMONTHREAD_H
-#include <QThread>
 #include <QDebug>
+#include <QThread>
 //#include "ZpodsLib/src/network/network.h"
-#include "ZpodsLib/src/core/daemon.h"
 #include "../grpc_client.h"
+#include "ZpodsLib/src/core/daemon.h"
 
-class DaemonThread: public QThread
+class DaemonThread : public QThread
 {
     Q_OBJECT
 
-public:
+  public:
     DaemonThread(QObject* parent);
-    void SetConfig(const zpods::DaemonConfig &config);
+    void SetConfig(const zpods::DaemonConfig& config);
     bool isRunning();
+    void stopThread();
 
-protected:
+  protected:
     void run() override;
 
-private:
+  private:
     zpods::DaemonConfig config;
-    bool isRun;
+    std::atomic<bool> stopRequested;
 };
 
 #endif // DAEMONTHREAD_H
-
-

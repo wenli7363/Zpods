@@ -12,6 +12,8 @@ LoginDialog::LoginDialog(QWidget *parent) :
     logined = false;
     ui->stackedWidget->setCurrentWidget(ui->loginPage);
 
+    this->daemonThread = new DaemonThread(this);
+
     connectLoginBtn();
     connectRegBtn();
     connectRegBtn2();
@@ -24,10 +26,21 @@ LoginDialog::~LoginDialog()
 }
 
 void LoginDialog::loginDialogReset() {
+    delete daemonThread;
+    daemonThread = new DaemonThread(this);
     ui->stackedWidget->setCurrentWidget(ui->loginPage);
     ui->pswLineEdit->clear();
     logined = false;
     user = {};
+//    if (daemonThread->isRunning())
+//    {
+//        daemonThread->terminate();
+//        daemonThread->wait();
+
+//        // 把实例清空
+//        delete daemonThread;
+//        this->daemonThread = new DaemonThread(this);
+//    }
 }
 
 std::string LoginDialog::get_username() {
@@ -68,6 +81,8 @@ void LoginDialog::connectLoginBtn()
         {
             logined = true;
             QMessageBox::information(this,"登录成功","登录成功");
+            // 开启daemon
+            startDaemon();
         }else{
             QMessageBox::critical(this,"错误","登录失败，请联系管理员");
             logined = false;
@@ -182,4 +197,24 @@ void LoginDialog::closeEvent(QCloseEvent *event)
     }
 
     QDialog::closeEvent(event);
+}
+
+void LoginDialog::startDaemon()
+{
+    zpods::DaemonConfig config;
+//    DaemonThread* daemonThread = new DaemonThread(this);
+
+    config.query_pods = [&](PodsQueryResult& result) {
+        return user.query_pods(result);
+    };
+    config.download_pod = [&](const std::string& pods_name,
+                              const std::string& pod_name,
+                              const std::string& dir) {
+        return this->user.download_pod(pods_name, pod_name, dir);
+    };
+    config.upload_pod = [&](const std::string& pod_path) {
+        return this->user.upload_pod(pod_path);
+    };
+        daemonThread->SetConfig(config);
+        daemonThread->start();
 }

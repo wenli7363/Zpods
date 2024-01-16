@@ -3,7 +3,8 @@
 
 #include <QWidget>
 
-namespace Ui {
+namespace Ui
+{
 class PeriodicWidget;
 }
 
@@ -11,19 +12,19 @@ class PeriodicWidget : public QWidget
 {
     Q_OBJECT
 
-public:
-    explicit PeriodicWidget(QWidget *parent = nullptr);
+  public:
+    explicit PeriodicWidget(QWidget* parent = nullptr);
     ~PeriodicWidget();
 
     int getValue();
     void setUnchecked();
 
-signals:
+  signals:
     void sentPeriodOpen();
     void sentPeriodClose();
 
-private:
-    Ui::PeriodicWidget *ui;
+  private:
+    Ui::PeriodicWidget* ui;
 };
 
 #endif // PERIODICWIDGET_H
